@@ -11,6 +11,7 @@ const withPWAConfig = withPWA({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  turbopack: {},
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: true,
