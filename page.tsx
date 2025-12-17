@@ -36,707 +36,12 @@ import { useRouter } from "next/navigation";
 import { useAppSelector } from "@src/redux/store";
 import { BASE_URL } from "@src/config/config";
 
-// ==================== TYPES ====================
-interface Society {
-  id: number;
-  name: string;
-  area: string;
-  pincode: string;
-  deliveryAvailable: boolean;
-}
-
-interface FormData {
-  fullName: string;
-  phone: string;
-  email: string;
-  addressLine1: string;
-  addressLine2: string;
-  city: string;
-  state: string;
-  pincode: string;
-  addressType: "home" | "work" | "other";
-}
-
-interface AppliedCoupon {
-  code: string;
-  couponId: string | number | null;
-  type: string;
-  value: number;
-  discountAmount: number;
-  finalAmount: number;
-}
-
-interface CartItem {
-  id: string;
-  name: string;
-  selectedSize: string;
-  variant_id?: number | null;
-  image: string;
-  quantity: number;
-  price: number;
-}
-
-interface CartData {
-  items: CartItem[];
-  subtotal: number;
-  discount: number;
-  shipping: number;
-  total: number;
-}
-
-// ==================== CONSTANTS ====================
-const STATIC_SOCIETIES: Society[] = [
-  {
-    id: 1,
-    name: "Gota Green Valley",
-    area: "Gota",
-    pincode: "382481",
-    deliveryAvailable: true,
-  },
-  {
-    id: 2,
-    name: "Shela Park Residency",
-    area: "Shela",
-    pincode: "380058",
-    deliveryAvailable: true,
-  },
-  {
-    id: 3,
-    name: "Thaltej Heights",
-    area: "Thaltej",
-    pincode: "380054",
-    deliveryAvailable: true,
-  },
-  {
-    id: 4,
-    name: "Bopal Gardens",
-    area: "Bopal",
-    pincode: "380058",
-    deliveryAvailable: true,
-  },
-  {
-    id: 5,
-    name: "Vastrapur Lake View",
-    area: "Vastrapur",
-    pincode: "380015",
-    deliveryAvailable: true,
-  },
-  {
-    id: 6,
-    name: "Science City Apartments",
-    area: "Science City Road",
-    pincode: "380060",
-    deliveryAvailable: true,
-  },
-  {
-    id: 7,
-    name: "Satellite Plaza",
-    area: "Satellite",
-    pincode: "380015",
-    deliveryAvailable: true,
-  },
-  {
-    id: 8,
-    name: "Prahlad Nagar Society",
-    area: "Prahlad Nagar",
-    pincode: "380015",
-    deliveryAvailable: true,
-  },
-  {
-    id: 9,
-    name: "Sarkhej Homes",
-    area: "Sarkhej",
-    pincode: "382210",
-    deliveryAvailable: false,
-  },
-  {
-    id: 10,
-    name: "SG Highway Residency",
-    area: "SG Highway",
-    pincode: "380054",
-    deliveryAvailable: true,
-  },
-  {
-    id: 11,
-    name: "Gota Meadows",
-    area: "Gota",
-    pincode: "382481",
-    deliveryAvailable: true,
-  },
-  {
-    id: 12,
-    name: "Gota Premium Heights",
-    area: "Gota",
-    pincode: "382481",
-    deliveryAvailable: true,
-  },
-];
-
-// ==================== COMPONENTS ====================
-
-// 1. EmptyCart Component
-const EmptyCart = ({ router }: { router: any }) => (
-  <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-    <Header />
-    <div className="lg:hidden bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-      <div className="px-4 py-4 flex items-center gap-3">
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
-        >
-          <FiArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold text-gray-900">Shopping Cart</h1>
-          <p className="text-sm text-gray-500">0 items</p>
-        </div>
-        <div className="p-2 rounded-lg bg-green-50 text-green-600">
-          <FiShoppingCart className="w-5 h-5" />
-        </div>
-      </div>
-    </div>
-
-    <main className="pt-16 lg:pt-24 pb-20 lg:pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-        <div className="bg-white rounded-xl lg:rounded-2xl border border-gray-200 p-8 sm:p-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="w-24 h-24 lg:w-32 lg:h-32 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FiPackage className="w-12 h-12 lg:w-16 lg:h-16 text-green-600" />
-            </div>
-            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-3">
-              Your cart is empty
-            </h3>
-            <p className="text-gray-600 text-sm lg:text-base mb-8">
-              Add fresh organic products to your cart
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={() => router.push("/product")}
-                className="px-6 py-3.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors active:scale-95"
-              >
-                Start Shopping
-              </button>
-              <button
-                onClick={() => router.push("/categories")}
-                className="px-6 py-3.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors active:scale-95"
-              >
-                Browse Categories
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-    <Footer />
-    <MobileBottomFooter />
-  </div>
-);
-
-// 2. CartItem Component
-const CartItemComponent = ({
-  item,
-  onUpdateQuantity,
-  onRemove,
-}: {
-  item: CartItem;
-  onUpdateQuantity: (id: string, size: string, change: number) => void;
-  onRemove: (id: string, size: string) => void;
-}) => (
-  <div className="bg-white rounded-lg lg:rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 group">
-    {/* Mobile Layout */}
-    <div className="lg:hidden">
-      <div className="flex gap-3 p-3">
-        <div className="relative flex-shrink-0">
-          <div className="w-20 h-20 rounded-lg overflow-hidden">
-            <img
-              src={item.image}
-              alt={item.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <button
-            onClick={() => onRemove(item.id, item.selectedSize)}
-            className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow flex items-center justify-center active:scale-95"
-          >
-            <FiTrash2 className="w-3 h-3 text-red-500" />
-          </button>
-        </div>
-
-        <div className="flex-1 flex flex-col justify-between min-w-0">
-          <div>
-            <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-1">
-              {item.name}
-            </h3>
-            <p className="text-xs text-gray-500">{item.selectedSize}</p>
-          </div>
-
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-              <button
-                onClick={() => onUpdateQuantity(item.id, item.selectedSize, -1)}
-                disabled={item.quantity <= 1}
-                className="w-8 h-8 flex items-center justify-center active:bg-gray-100 transition-colors disabled:opacity-30"
-              >
-                <FiMinus className="w-3 h-3 stroke-2" />
-              </button>
-              <div className="w-8 text-center font-bold text-gray-900 text-sm">
-                {item.quantity}
-              </div>
-              <button
-                onClick={() => onUpdateQuantity(item.id, item.selectedSize, 1)}
-                className="w-8 h-8 flex items-center justify-center active:bg-gray-100 transition-colors"
-              >
-                <FiPlus className="w-3 h-3 stroke-2" />
-              </button>
-            </div>
-
-            <div className="text-right">
-              <p className="text-base font-bold text-gray-900">
-                ₹{(item.price * item.quantity).toFixed(2)}
-              </p>
-              <p className="text-xs text-gray-500">₹{item.price} each</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Desktop Layout */}
-    <div className="hidden lg:block p-4 lg:p-6">
-      <div className="flex gap-4">
-        <div className="relative flex-shrink-0">
-          <div className="w-24 h-24 rounded-lg overflow-hidden">
-            <img
-              src={item.image}
-              alt={item.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 flex flex-col justify-between min-w-0">
-          <div>
-            <div className="flex items-start justify-between gap-4 mb-2">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-gray-900 text-base line-clamp-2">
-                  {item.name}
-                </h3>
-                <p className="text-sm text-gray-500">{item.selectedSize}</p>
-              </div>
-              <button
-                onClick={() => onRemove(item.id, item.selectedSize)}
-                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-95"
-              >
-                <FiTrash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
-            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-              <button
-                onClick={() => onUpdateQuantity(item.id, item.selectedSize, -1)}
-                disabled={item.quantity <= 1}
-                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30"
-              >
-                <FiMinus className="w-4 h-4 stroke-2" />
-              </button>
-              <div className="w-12 text-center font-bold text-gray-900">
-                {item.quantity}
-              </div>
-              <button
-                onClick={() => onUpdateQuantity(item.id, item.selectedSize, 1)}
-                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
-              >
-                <FiPlus className="w-4 h-4 stroke-2" />
-              </button>
-            </div>
-
-            <div className="text-right">
-              <p className="text-xl font-bold text-gray-900">
-                ₹{(item.price * item.quantity).toFixed(2)}
-              </p>
-              <p className="text-xs text-gray-500">₹{item.price} each</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// 3. FreeDeliveryBanner Component
-const FreeDeliveryBanner = () => (
-  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4 lg:mb-6">
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <FiTruck className="text-white w-5 h-5 lg:w-6 lg:h-6" />
-      </div>
-      <div className="flex-1">
-        <p className="font-bold text-gray-900 text-sm lg:text-base">
-          Free Delivery!
-        </p>
-        <p className="text-gray-600 text-xs lg:text-sm">
-          Your order qualifies for free shipping
-        </p>
-      </div>
-      <IoCheckmarkCircle className="text-green-600 w-6 h-6 lg:w-8 lg:h-8 flex-shrink-0" />
-    </div>
-  </div>
-);
-
-// 4. PromoCodeSection Component
-const PromoCodeSection = ({
-  promoCode,
-  setPromoCode,
-  showPromoInput,
-  setShowPromoInput,
-  appliedCoupon,
-  setAppliedCoupon,
-  applyPromocode,
-  isProcessing,
-}: {
-  promoCode: string;
-  setPromoCode: (code: string) => void;
-  showPromoInput: boolean;
-  setShowPromoInput: (show: boolean) => void;
-  appliedCoupon: AppliedCoupon | null;
-  setAppliedCoupon: (coupon: AppliedCoupon | null) => void;
-  applyPromocode: () => void;
-  isProcessing: boolean;
-}) => {
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setPromoCode("");
-    toast.success("Promo code removed");
-  };
-
-  if (!appliedCoupon && !showPromoInput) {
-    return (
-      <button
-        onClick={() => setShowPromoInput(true)}
-        className="w-full mb-4 p-3 bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg transition-all flex items-center justify-between active:scale-98"
-      >
-        <div className="flex items-center gap-2">
-          <FiTag className="text-green-600" />
-          <span className="font-semibold text-gray-900 text-sm">
-            Have a promo code?
-          </span>
-        </div>
-        <span className="text-green-600 font-semibold text-sm">Apply</span>
-      </button>
-    );
-  }
-
-  if (showPromoInput && !appliedCoupon) {
-    return (
-      <div className="mb-4">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Enter code"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-            onKeyPress={(e) => e.key === "Enter" && applyPromocode()}
-            className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none text-sm"
-            disabled={isProcessing}
-          />
-          <button
-            onClick={applyPromocode}
-            disabled={isProcessing || !promoCode.trim()}
-            className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all disabled:bg-gray-300 active:scale-95"
-          >
-            Apply
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (appliedCoupon) {
-    return (
-      <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-bold text-gray-900 text-sm">
-              {appliedCoupon.code}
-            </p>
-            <p className="text-xs text-green-700">
-              {appliedCoupon.type === "FIXED"
-                ? `₹${appliedCoupon.value}`
-                : `${appliedCoupon.value}%`}{" "}
-              off applied
-            </p>
-          </div>
-          <button
-            onClick={handleRemoveCoupon}
-            className="text-red-600 font-semibold text-xs hover:text-red-700"
-          >
-            Remove
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
-};
-
-// 5. PriceBreakdown Component
-const PriceBreakdown = ({
-  cartItems,
-  subtotal,
-  discount,
-  total,
-}: {
-  cartItems: CartItem[];
-  subtotal: number;
-  discount: number;
-  total: number;
-}) => (
-  <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
-    <div className="flex justify-between">
-      <span className="text-gray-600 text-sm">
-        Subtotal ({cartItems.length} items)
-      </span>
-      <span className="font-bold text-gray-900">₹{subtotal.toFixed(2)}</span>
-    </div>
-    <div className="flex justify-between">
-      <span className="text-gray-600 text-sm">Shipping</span>
-      <span className="font-bold text-green-600">FREE</span>
-    </div>
-    {discount > 0 && (
-      <div className="flex justify-between text-green-700">
-        <span className="font-medium text-sm">Discount</span>
-        <span className="font-bold">-₹{discount.toFixed(2)}</span>
-      </div>
-    )}
-  </div>
-);
-
-// 6. CheckoutButton Component
-const CheckoutButton = ({
-  onClick,
-  disabled,
-  total,
-}: {
-  onClick: () => void;
-  disabled: boolean;
-  total: number;
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all disabled:bg-gray-300 shadow-lg shadow-green-600/30 active:scale-98"
-  >
-    Proceed to Checkout
-  </button>
-);
-
-// 7. TrustBadges Component
-const TrustBadges = () => (
-  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-    <div className="flex items-center gap-2 text-xs text-gray-600">
-      <FiShield className="text-gray-400 w-3 h-3" />
-      <span>Secure checkout</span>
-    </div>
-    <div className="flex items-center gap-2 text-xs text-gray-600">
-      <FiTruck className="text-gray-400 w-3 h-3" />
-      <span>Free shipping</span>
-    </div>
-    <div className="flex items-center gap-2 text-xs text-gray-600">
-      <IoCashOutline className="text-gray-400 w-3 h-3" />
-      <span>Cash on Delivery available</span>
-    </div>
-  </div>
-);
-
-// 8. SocietySelector Component (for CheckoutModal)
-const SocietySelector = ({
-  selectedSociety,
-  setSelectedSociety,
-  searchQuery,
-  setSearchQuery,
-  showSocietyDropdown,
-  setShowSocietyDropdown,
-  errors,
-  setErrors,
-}: {
-  selectedSociety: Society | null;
-  setSelectedSociety: (society: Society) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  showSocietyDropdown: boolean;
-  setShowSocietyDropdown: (show: boolean) => void;
-  errors: any;
-  setErrors: (errors: any) => void;
-}) => {
-  const filteredSocieties = searchQuery.trim()
-    ? STATIC_SOCIETIES.filter(
-        (society) =>
-          society.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          society.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          society.pincode.includes(searchQuery)
-      )
-    : STATIC_SOCIETIES;
-
-  const handleSocietySelect = (society: Society) => {
-    if (society.deliveryAvailable) {
-      setSelectedSociety(society);
-      setSearchQuery("");
-      setShowSocietyDropdown(false);
-      if (errors.society) {
-        setErrors((prev: any) => ({ ...prev, society: "" }));
-      }
-      toast.success(`Selected: ${society.name}`, {
-        icon: "📍",
-        duration: 2000,
-      });
-    } else {
-      toast.error("Delivery not available in this area", { icon: "❌" });
-    }
-  };
-
-  return (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
-        Select Society / Locality *
-      </label>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setShowSocietyDropdown(!showSocietyDropdown)}
-          className={`w-full px-4 py-3 border-2 rounded-lg text-left flex items-center justify-between transition-all active:scale-98 ${
-            errors.society
-              ? "border-red-500"
-              : selectedSociety
-              ? "border-green-600 bg-green-50"
-              : "border-gray-200 hover:border-gray-300"
-          }`}
-        >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <FiMapPin
-              className={`w-4 h-4 flex-shrink-0 ${
-                selectedSociety ? "text-green-600" : "text-gray-400"
-              }`}
-            />
-            {selectedSociety ? (
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-gray-900 truncate text-sm">
-                  {selectedSociety.name}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {selectedSociety.area}, Ahmedabad • {selectedSociety.pincode}
-                </p>
-              </div>
-            ) : (
-              <span className="text-gray-500 text-sm">
-                Choose your society in Ahmedabad
-              </span>
-            )}
-          </div>
-          <FiChevronDown
-            className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${
-              showSocietyDropdown ? "rotate-180" : ""
-            }`}
-          />
-        </button>
-
-        {showSocietyDropdown && (
-          <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-hidden">
-            <div className="p-3 border-b border-gray-200 sticky top-0 bg-white">
-              <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search society, area, or pincode..."
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-green-600 text-sm"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            </div>
-
-            <div className="max-h-64 overflow-y-auto">
-              {filteredSocieties.length === 0 ? (
-                <div className="text-center py-8 px-4">
-                  <FiPackage className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-600 text-sm">No societies found</p>
-                </div>
-              ) : (
-                filteredSocieties.map((society) => (
-                  <button
-                    key={society.id}
-                    type="button"
-                    onClick={() => handleSocietySelect(society)}
-                    className={`w-full p-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 active:scale-98 ${
-                      !society.deliveryAvailable
-                        ? "opacity-50 cursor-not-allowed bg-gray-50"
-                        : ""
-                    } ${
-                      selectedSociety?.id === society.id ? "bg-green-50" : ""
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <FiMapPin
-                        className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
-                          selectedSociety?.id === society.id
-                            ? "text-green-600"
-                            : "text-gray-400"
-                        }`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`font-semibold text-sm truncate ${
-                            selectedSociety?.id === society.id
-                              ? "text-green-700"
-                              : "text-gray-900"
-                          }`}
-                        >
-                          {society.name}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {society.area}, Ahmedabad • {society.pincode}
-                        </p>
-                        {!society.deliveryAvailable && (
-                          <p className="text-xs text-red-600 font-semibold mt-1">
-                            Delivery not available
-                          </p>
-                        )}
-                      </div>
-                      {selectedSociety?.id === society.id && (
-                        <IoCheckmarkCircle className="text-green-600 w-4 h-4 flex-shrink-0" />
-                      )}
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-      {errors.society && (
-        <p className="text-red-500 text-sm mt-1">{errors.society}</p>
-      )}
-    </div>
-  );
-};
-
-// 9. CheckoutModal Component
-const CheckoutModal = ({
-  isOpen,
-  onClose,
-  cartData,
-  appliedCoupon,
-}: {
-  isOpen: boolean;
-  onClose: (orderSuccess: boolean) => void;
-  cartData: CartData;
-  appliedCoupon: AppliedCoupon | null;
-}) => {
+// ========================================
+// CHECKOUT MODAL COMPONENT
+// ========================================
+const CheckoutModal = ({ isOpen, onClose, cartData, appliedCoupon }) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
     email: "",
@@ -747,16 +52,114 @@ const CheckoutModal = ({
     pincode: "",
     addressType: "home",
   });
-  const [selectedSociety, setSelectedSociety] = useState<Society | null>(null);
+  const [selectedSociety, setSelectedSociety] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState({});
   const router = useRouter();
   const user = useAppSelector(selectUser);
+  console.log("User in CheckoutModal:", user);
+
+  // Static societies data
+  const STATIC_SOCIETIES = [
+    {
+      id: 1,
+      name: "Gota Green Valley",
+      area: "Gota",
+      pincode: "382481",
+      deliveryAvailable: true,
+    },
+    {
+      id: 2,
+      name: "Shela Park Residency",
+      area: "Shela",
+      pincode: "380058",
+      deliveryAvailable: true,
+    },
+    {
+      id: 3,
+      name: "Thaltej Heights",
+      area: "Thaltej",
+      pincode: "380054",
+      deliveryAvailable: true,
+    },
+    {
+      id: 4,
+      name: "Bopal Gardens",
+      area: "Bopal",
+      pincode: "380058",
+      deliveryAvailable: true,
+    },
+    {
+      id: 5,
+      name: "Vastrapur Lake View",
+      area: "Vastrapur",
+      pincode: "380015",
+      deliveryAvailable: true,
+    },
+    {
+      id: 6,
+      name: "Science City Apartments",
+      area: "Science City Road",
+      pincode: "380060",
+      deliveryAvailable: true,
+    },
+    {
+      id: 7,
+      name: "Satellite Plaza",
+      area: "Satellite",
+      pincode: "380015",
+      deliveryAvailable: true,
+    },
+    {
+      id: 8,
+      name: "Prahlad Nagar Society",
+      area: "Prahlad Nagar",
+      pincode: "380015",
+      deliveryAvailable: true,
+    },
+    {
+      id: 9,
+      name: "Sarkhej Homes",
+      area: "Sarkhej",
+      pincode: "382210",
+      deliveryAvailable: false,
+    },
+    {
+      id: 10,
+      name: "SG Highway Residency",
+      area: "SG Highway",
+      pincode: "380054",
+      deliveryAvailable: true,
+    },
+    {
+      id: 11,
+      name: "Gota Meadows",
+      area: "Gota",
+      pincode: "382481",
+      deliveryAvailable: true,
+    },
+    {
+      id: 12,
+      name: "Gota Premium Heights",
+      area: "Gota",
+      pincode: "382481",
+      deliveryAvailable: true,
+    },
+  ];
+
+  const filteredSocieties = searchQuery.trim()
+    ? STATIC_SOCIETIES.filter(
+        (society) =>
+          society.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          society.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          society.pincode.includes(searchQuery)
+      )
+    : STATIC_SOCIETIES;
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors = {};
     if (!selectedSociety) newErrors.society = "Please select a society";
     if (!formData.fullName.trim()) newErrors.fullName = "Name is required";
     if (!formData.phone.trim() || formData.phone.length !== 10)
@@ -770,11 +173,29 @@ const CheckoutModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors((prev: any) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleSocietySelect = (society) => {
+    if (society.deliveryAvailable) {
+      setSelectedSociety(society);
+      setSearchQuery("");
+      setShowSocietyDropdown(false);
+      setFormData((prev) => ({ ...prev, pincode: society.pincode }));
+      if (errors.society) {
+        setErrors((prev) => ({ ...prev, society: "" }));
+      }
+      toast.success(`Selected: ${society.name}`, {
+        icon: "📍",
+        duration: 2000,
+      });
+    } else {
+      toast.error("Delivery not available in this area", { icon: "❌" });
     }
   };
 
@@ -791,6 +212,7 @@ const CheckoutModal = ({
     setIsLoading(true);
     const loadingToast = toast.loading("Placing your order...");
 
+    // Create structured address object
     const shippingAddress = {
       fullName: formData.fullName,
       phone: formData.phone,
@@ -816,17 +238,18 @@ const CheckoutModal = ({
       grandTotal: parseFloat(cartData.total.toFixed(2)),
       items: cartData.items.map((item) => ({
         product_id: item.id,
-        variant_id: item.variant_id || null,
+        variant_id: item.variant_id || item.selectedVariantId || null,
         quantity: item.quantity,
         price: parseFloat(item.price),
         total: parseFloat((item.price * item.quantity).toFixed(2)),
       })),
-      Address: shippingAddress,
+      Address: shippingAddress, // Add the structured address
       status: "CONFIRMED",
       paymentStatus: "PAID",
       paymentMethod: "COD",
     };
 
+    console.log("Order Payload:", JSON.stringify(orderPayload, null, 2));
     try {
       const response = await fetch(`${BASE_URL}/api/orders`, {
         method: "POST",
@@ -840,34 +263,44 @@ const CheckoutModal = ({
       if (response.ok && (data.success || data.status === "success")) {
         const orderId = data.orderId || data.data?.id || data.id || "N/A";
 
+        // Log the response to verify address is stored
+        console.log("Order Response:", data);
+        console.log(
+          "Shipping Address:",
+          data.data?.shippingAddress || data.shippingAddress
+        );
+
         toast.success(
-          <div className="flex flex-col gap-2 max-w-md">
-            <div className="flex items-center gap-2">
-              <IoCheckmarkCircle className="text-green-500 text-2xl flex-shrink-0" />
-              <span className="font-bold text-lg">
-                Order Placed Successfully!
-              </span>
+          (t) => (
+            <div className="flex flex-col gap-2 max-w-md">
+              <div className="flex items-center gap-2">
+                <IoCheckmarkCircle className="text-green-500 text-2xl flex-shrink-0" />
+                <span className="font-bold text-lg">
+                  Order Placed Successfully!
+                </span>
+              </div>
+              <div className="text-sm space-y-1 pl-8">
+                <p>
+                  <span className="font-semibold">Order ID:</span> {orderId}
+                </p>
+                <p>
+                  <span className="font-semibold">Amount:</span> ₹
+                  {cartData.total.toFixed(2)}
+                </p>
+                <p>
+                  <span className="font-semibold">Delivery to:</span>{" "}
+                  {formData.addressLine1}, {selectedSociety?.area}
+                </p>
+                <p>
+                  <span className="font-semibold">Payment:</span> Cash on
+                  Delivery
+                </p>
+              </div>
+              <p className="text-xs text-gray-600 mt-1 pl-8">
+                Expected delivery in 2-3 business days
+              </p>
             </div>
-            <div className="text-sm space-y-1 pl-8">
-              <p>
-                <span className="font-semibold">Order ID:</span> {orderId}
-              </p>
-              <p>
-                <span className="font-semibold">Amount:</span> ₹
-                {cartData.total.toFixed(2)}
-              </p>
-              <p>
-                <span className="font-semibold">Delivery to:</span>{" "}
-                {formData.addressLine1}, {selectedSociety?.area}
-              </p>
-              <p>
-                <span className="font-semibold">Payment:</span> Cash on Delivery
-              </p>
-            </div>
-            <p className="text-xs text-gray-600 mt-1 pl-8">
-              Expected delivery in 2-3 business days
-            </p>
-          </div>,
+          ),
           {
             duration: 5000,
             style: {
@@ -884,12 +317,15 @@ const CheckoutModal = ({
       } else {
         const errorMessage =
           data.message || data.error || "Failed to place order";
+
         toast.error(
-          <div className="flex flex-col gap-2">
-            <span className="font-bold text-base">Order Failed</span>
-            <p className="text-sm">{errorMessage}</p>
-            <p className="text-xs text-gray-600">Please try again</p>
-          </div>,
+          (t) => (
+            <div className="flex flex-col gap-2">
+              <span className="font-bold text-base">Order Failed</span>
+              <p className="text-sm">{errorMessage}</p>
+              <p className="text-xs text-gray-600">Please try again</p>
+            </div>
+          ),
           {
             duration: 4000,
             style: {
@@ -903,14 +339,18 @@ const CheckoutModal = ({
       }
     } catch (error) {
       toast.dismiss(loadingToast);
+      console.error("Order placement error:", error);
+
       toast.error(
-        <div className="flex flex-col gap-2">
-          <span className="font-bold text-base">Network Error</span>
-          <p className="text-sm">Could not connect to the server</p>
-          <p className="text-xs text-gray-600">
-            Please check your internet connection
-          </p>
-        </div>,
+        (t) => (
+          <div className="flex flex-col gap-2">
+            <span className="font-bold text-base">Network Error</span>
+            <p className="text-sm">Could not connect to the server</p>
+            <p className="text-xs text-gray-600">
+              Please check your internet connection
+            </p>
+          </div>
+        ),
         {
           duration: 4000,
           style: {
@@ -939,7 +379,7 @@ const CheckoutModal = ({
     <>
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
-        onClick={() => onClose(false)}
+        onClick={onClose}
       />
 
       <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center pointer-events-none">
@@ -967,7 +407,7 @@ const CheckoutModal = ({
               </div>
             </div>
             <button
-              onClick={() => onClose(false)}
+              onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors active:scale-95"
             >
               <FiX className="w-6 h-6 text-gray-600" />
@@ -992,7 +432,7 @@ const CheckoutModal = ({
             {step === 1 && (
               <div className="p-4 lg:p-6 space-y-4">
                 <div className="flex gap-2">
-                  {(["home", "work", "other"] as const).map((type) => (
+                  {["home", "work", "other"].map((type) => (
                     <button
                       key={type}
                       onClick={() =>
@@ -1012,16 +452,140 @@ const CheckoutModal = ({
 
                 <div className="space-y-4">
                   {/* Society Selector */}
-                  <SocietySelector
-                    selectedSociety={selectedSociety}
-                    setSelectedSociety={setSelectedSociety}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    showSocietyDropdown={showSocietyDropdown}
-                    setShowSocietyDropdown={setShowSocietyDropdown}
-                    errors={errors}
-                    setErrors={setErrors}
-                  />
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Select Society / Locality *
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowSocietyDropdown(!showSocietyDropdown)
+                        }
+                        className={`w-full px-4 py-3 border-2 rounded-lg text-left flex items-center justify-between transition-all active:scale-98 ${
+                          errors.society
+                            ? "border-red-500"
+                            : selectedSociety
+                            ? "border-green-600 bg-green-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <FiMapPin
+                            className={`w-4 h-4 flex-shrink-0 ${
+                              selectedSociety
+                                ? "text-green-600"
+                                : "text-gray-400"
+                            }`}
+                          />
+                          {selectedSociety ? (
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-gray-900 truncate text-sm">
+                                {selectedSociety.name}
+                              </p>
+                              <p className="text-xs text-gray-500 truncate">
+                                {selectedSociety.area}, Ahmedabad •{" "}
+                                {selectedSociety.pincode}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-gray-500 text-sm">
+                              Choose your society in Ahmedabad
+                            </span>
+                          )}
+                        </div>
+                        <FiChevronDown
+                          className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${
+                            showSocietyDropdown ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {showSocietyDropdown && (
+                        <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-hidden">
+                          <div className="p-3 border-b border-gray-200 sticky top-0 bg-white">
+                            <div className="relative">
+                              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                              <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search society, area, or pincode..."
+                                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-green-600 text-sm"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="max-h-64 overflow-y-auto">
+                            {filteredSocieties.length === 0 ? (
+                              <div className="text-center py-8 px-4">
+                                <FiPackage className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                                <p className="text-gray-600 text-sm">
+                                  No societies found
+                                </p>
+                              </div>
+                            ) : (
+                              filteredSocieties.map((society) => (
+                                <button
+                                  key={society.id}
+                                  type="button"
+                                  onClick={() => handleSocietySelect(society)}
+                                  className={`w-full p-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 active:scale-98 ${
+                                    !society.deliveryAvailable
+                                      ? "opacity-50 cursor-not-allowed bg-gray-50"
+                                      : ""
+                                  } ${
+                                    selectedSociety?.id === society.id
+                                      ? "bg-green-50"
+                                      : ""
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <FiMapPin
+                                      className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                                        selectedSociety?.id === society.id
+                                          ? "text-green-600"
+                                          : "text-gray-400"
+                                      }`}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <p
+                                        className={`font-semibold text-sm truncate ${
+                                          selectedSociety?.id === society.id
+                                            ? "text-green-700"
+                                            : "text-gray-900"
+                                        }`}
+                                      >
+                                        {society.name}
+                                      </p>
+                                      <p className="text-xs text-gray-500 truncate">
+                                        {society.area}, Ahmedabad •{" "}
+                                        {society.pincode}
+                                      </p>
+                                      {!society.deliveryAvailable && (
+                                        <p className="text-xs text-red-600 font-semibold mt-1">
+                                          Delivery not available
+                                        </p>
+                                      )}
+                                    </div>
+                                    {selectedSociety?.id === society.id && (
+                                      <IoCheckmarkCircle className="text-green-600 w-4 h-4 flex-shrink-0" />
+                                    )}
+                                  </div>
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {errors.society && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.society}
+                      </p>
+                    )}
+                  </div>
 
                   {/* Full Name */}
                   <div>
@@ -1059,7 +623,7 @@ const CheckoutModal = ({
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="10-digit number"
-                        maxLength={10}
+                        maxLength="10"
                         className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
                           errors.phone
                             ? "border-red-500 focus:border-red-600"
@@ -1138,7 +702,7 @@ const CheckoutModal = ({
                       value={formData.pincode}
                       onChange={handleInputChange}
                       placeholder="6-digit pincode"
-                      maxLength={6}
+                      maxLength="6"
                       className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
                         errors.pincode
                           ? "border-red-500 focus:border-red-600"
@@ -1384,7 +948,9 @@ const CheckoutModal = ({
   );
 };
 
-// ==================== MAIN COMPONENT ====================
+// ========================================
+// MAIN SHOPPING CART COMPONENT
+// ========================================
 const ShoppingCartPage = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector(selectCartItems);
@@ -1392,9 +958,7 @@ const ShoppingCartPage = () => {
   const router = useRouter();
 
   const [promoCode, setPromoCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(
-    null
-  );
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -1405,9 +969,9 @@ const ShoppingCartPage = () => {
   const total = subtotal - discount + shipping;
 
   // Update quantity
-  const updatequantity = (id: string, selectedSize: string, change: number) => {
+  const updatequantity = (id, selectedSize, change) => {
     const item = cartItems.find(
-      (i: any) => i.id === id && i.selectedSize === selectedSize
+      (i) => i.id === id && i.selectedSize === selectedSize
     );
     if (item) {
       dispatch(
@@ -1425,7 +989,7 @@ const ShoppingCartPage = () => {
   };
 
   // Remove item
-  const removeItem = (id: string, selectedSize: string) => {
+  const removeItem = (id, selectedSize) => {
     dispatch(removeFromCart({ id, selectedSize }));
     toast.success("Removed from cart", { icon: "🗑️", duration: 2000 });
   };
@@ -1442,7 +1006,7 @@ const ShoppingCartPage = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/api/cupon/${promoCode}/validate`,
+        `{BASE_URL}/api/cupon/${promoCode}/validate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1492,21 +1056,76 @@ const ShoppingCartPage = () => {
   };
 
   const handleCheckoutClick = () => setShowCheckoutModal(true);
-
-  const handleModalClose = (orderSuccess: boolean) => {
+  const handleModalClose = (orderSuccess) => {
     setShowCheckoutModal(false);
-    // Only clear cart when order is successfully placed
     if (orderSuccess) {
       dispatch(clearCart());
       setAppliedCoupon(null);
       router.push("/orders");
     }
-    // If orderSuccess is false (modal closed without completing order), do NOT clear cart
   };
 
   // Empty cart state
   if (cartItems.length === 0) {
-    return <EmptyCart router={router} />;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        <Header />
+
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
+          <div className="px-4 py-4 flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
+            >
+              <FiArrowLeft className="w-5 h-5 text-gray-700" />
+            </button>
+            <div className="flex-1">
+              <h1 className="text-lg font-bold text-gray-900">Shopping Cart</h1>
+              <p className="text-sm text-gray-500">0 items</p>
+            </div>
+            <div className="p-2 rounded-lg bg-green-50 text-green-600">
+              <FiShoppingCart className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+
+        <main className="pt-16 lg:pt-24 pb-20 lg:pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+            <div className="bg-white rounded-xl lg:rounded-2xl border border-gray-200 p-8 sm:p-12 text-center">
+              <div className="max-w-md mx-auto">
+                <div className="w-24 h-24 lg:w-32 lg:h-32 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FiPackage className="w-12 h-12 lg:w-16 lg:h-16 text-green-600" />
+                </div>
+                <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-3">
+                  Your cart is empty
+                </h3>
+                <p className="text-gray-600 text-sm lg:text-base mb-8">
+                  Add fresh organic products to your cart
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => router.push("/shop")}
+                    className="px-6 py-3.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors active:scale-95"
+                  >
+                    Start Shopping
+                  </button>
+                  <button
+                    onClick={() => router.push("/categories")}
+                    className="px-6 py-3.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors active:scale-95"
+                  >
+                    Browse Categories
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+        <MobileBottomFooter />
+      </div>
+    );
   }
 
   return (
@@ -1559,19 +1178,179 @@ const ShoppingCartPage = () => {
           </div>
 
           {/* Free Delivery Banner */}
-          <FreeDeliveryBanner />
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4 lg:mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <FiTruck className="text-white w-5 h-5 lg:w-6 lg:h-6" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900 text-sm lg:text-base">
+                  Free Delivery!
+                </p>
+                <p className="text-gray-600 text-xs lg:text-sm">
+                  Your order qualifies for free shipping
+                </p>
+              </div>
+              <IoCheckmarkCircle className="text-green-600 w-6 h-6 lg:w-8 lg:h-8 flex-shrink-0" />
+            </div>
+          </div>
 
           <div className="lg:grid lg:grid-cols-3 lg:gap-6">
             {/* Cart Items */}
             <div className="lg:col-span-2">
               <div className="space-y-3 lg:space-y-4">
-                {cartItems.map((item: any, index: number) => (
-                  <CartItemComponent
+                {cartItems.map((item, index) => (
+                  <div
                     key={index}
-                    item={item}
-                    onUpdateQuantity={updatequantity}
-                    onRemove={removeItem}
-                  />
+                    className="bg-white rounded-lg lg:rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 group"
+                  >
+                    {/* Mobile Layout */}
+                    <div className="lg:hidden">
+                      <div className="flex gap-3 p-3">
+                        {/* Image */}
+                        <div className="relative flex-shrink-0">
+                          <div className="w-20 h-20 rounded-lg overflow-hidden">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          {/* Remove Button */}
+                          <button
+                            onClick={() =>
+                              removeItem(item.id, item.selectedSize)
+                            }
+                            className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow flex items-center justify-center active:scale-95"
+                          >
+                            <FiTrash2 className="w-3 h-3 text-red-500" />
+                          </button>
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-1">
+                              {item.name}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              {item.selectedSize}
+                            </p>
+                          </div>
+
+                          {/* Quantity & Price */}
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                              <button
+                                onClick={() =>
+                                  updatequantity(item.id, item.selectedSize, -1)
+                                }
+                                disabled={item.quantity <= 1}
+                                className="w-8 h-8 flex items-center justify-center active:bg-gray-100 transition-colors disabled:opacity-30"
+                              >
+                                <FiMinus className="w-3 h-3 stroke-2" />
+                              </button>
+                              <div className="w-8 text-center font-bold text-gray-900 text-sm">
+                                {item.quantity}
+                              </div>
+                              <button
+                                onClick={() =>
+                                  updatequantity(item.id, item.selectedSize, 1)
+                                }
+                                className="w-8 h-8 flex items-center justify-center active:bg-gray-100 transition-colors"
+                              >
+                                <FiPlus className="w-3 h-3 stroke-2" />
+                              </button>
+                            </div>
+
+                            <div className="text-right">
+                              <p className="text-base font-bold text-gray-900">
+                                ₹{(item.price * item.quantity).toFixed(2)}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                ₹{item.price} each
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden lg:block p-4 lg:p-6">
+                      <div className="flex gap-4">
+                        {/* Image */}
+                        <div className="relative flex-shrink-0">
+                          <div className="w-24 h-24 rounded-lg overflow-hidden">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          <div>
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-gray-900 text-base line-clamp-2">
+                                  {item.name}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                  {item.selectedSize}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  removeItem(item.id, item.selectedSize)
+                                }
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-95"
+                              >
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Quantity & Price */}
+                          <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
+                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                              <button
+                                onClick={() =>
+                                  updatequantity(item.id, item.selectedSize, -1)
+                                }
+                                disabled={item.quantity <= 1}
+                                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30"
+                              >
+                                <FiMinus className="w-4 h-4 stroke-2" />
+                              </button>
+                              <div className="w-12 text-center font-bold text-gray-900">
+                                {item.quantity}
+                              </div>
+                              <button
+                                onClick={() =>
+                                  updatequantity(item.id, item.selectedSize, 1)
+                                }
+                                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                              >
+                                <FiPlus className="w-4 h-4 stroke-2" />
+                              </button>
+                            </div>
+
+                            <div className="text-right">
+                              <p className="text-xl font-bold text-gray-900">
+                                ₹{(item.price * item.quantity).toFixed(2)}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                ₹{item.price} each
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -1585,24 +1364,102 @@ const ShoppingCartPage = () => {
                     Order Summary
                   </h2>
 
-                  <PromoCodeSection
-                    promoCode={promoCode}
-                    setPromoCode={setPromoCode}
-                    showPromoInput={showPromoInput}
-                    setShowPromoInput={setShowPromoInput}
-                    appliedCoupon={appliedCoupon}
-                    setAppliedCoupon={setAppliedCoupon}
-                    applyPromocode={applyPromocode}
-                    isProcessing={isProcessing}
-                  />
+                  {!appliedCoupon && !showPromoInput && (
+                    <button
+                      onClick={() => setShowPromoInput(true)}
+                      className="w-full mb-4 p-3 bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg transition-all flex items-center justify-between active:scale-98"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FiTag className="text-green-600" />
+                        <span className="font-semibold text-gray-900 text-sm">
+                          Have a promo code?
+                        </span>
+                      </div>
+                      <span className="text-green-600 font-semibold text-sm">
+                        Apply
+                      </span>
+                    </button>
+                  )}
+
+                  {showPromoInput && !appliedCoupon && (
+                    <div className="mb-4">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter code"
+                          value={promoCode}
+                          onChange={(e) =>
+                            setPromoCode(e.target.value.toUpperCase())
+                          }
+                          onKeyPress={(e) =>
+                            e.key === "Enter" && applyPromocode()
+                          }
+                          className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none text-sm"
+                          disabled={isProcessing}
+                        />
+                        <button
+                          onClick={applyPromocode}
+                          disabled={isProcessing || !promoCode.trim()}
+                          className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all disabled:bg-gray-300 active:scale-95"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {appliedCoupon && (
+                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm">
+                            {appliedCoupon.code}
+                          </p>
+                          <p className="text-xs text-green-700">
+                            {appliedCoupon.type === "FIXED"
+                              ? `₹${appliedCoupon.value}`
+                              : `${appliedCoupon.value}%`}{" "}
+                            off applied
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setAppliedCoupon(null);
+                            setPromoCode("");
+                            setShowPromoInput(false);
+                            toast.success("Promo code removed");
+                          }}
+                          className="text-red-600 font-semibold text-xs hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Price Breakdown */}
-                  <PriceBreakdown
-                    cartItems={cartItems}
-                    subtotal={subtotal}
-                    discount={discount}
-                    total={total}
-                  />
+                  <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 text-sm">
+                        Subtotal ({cartItems.length} items)
+                      </span>
+                      <span className="font-bold text-gray-900">
+                        ₹{subtotal.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 text-sm">Shipping</span>
+                      <span className="font-bold text-green-600">FREE</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-green-700">
+                        <span className="font-medium text-sm">Discount</span>
+                        <span className="font-bold">
+                          -₹{discount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-lg font-bold text-gray-900">
@@ -1613,13 +1470,29 @@ const ShoppingCartPage = () => {
                     </span>
                   </div>
 
-                  <CheckoutButton
+                  <button
                     onClick={handleCheckoutClick}
                     disabled={isProcessing}
-                    total={total}
-                  />
+                    className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all disabled:bg-gray-300 shadow-lg shadow-green-600/30 active:scale-98"
+                  >
+                    Proceed to Checkout
+                  </button>
 
-                  <TrustBadges />
+                  {/* Trust Badges */}
+                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <FiShield className="text-gray-400 w-3 h-3" />
+                      <span>Secure checkout</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <FiTruck className="text-gray-400 w-3 h-3" />
+                      <span>Free shipping</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <IoCashOutline className="text-gray-400 w-3 h-3" />
+                      <span>Cash on Delivery available</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1628,16 +1501,68 @@ const ShoppingCartPage = () => {
           {/* Mobile Bottom Bar */}
           <div className="lg:hidden mt-6">
             <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <PromoCodeSection
-                promoCode={promoCode}
-                setPromoCode={setPromoCode}
-                showPromoInput={showPromoInput}
-                setShowPromoInput={setShowPromoInput}
-                appliedCoupon={appliedCoupon}
-                setAppliedCoupon={setAppliedCoupon}
-                applyPromocode={applyPromocode}
-                isProcessing={isProcessing}
-              />
+              {!appliedCoupon && !showPromoInput && (
+                <button
+                  onClick={() => setShowPromoInput(true)}
+                  className="w-full mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between active:scale-98 transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <FiTag className="text-green-600" />
+                    <span className="font-semibold text-gray-900 text-sm">
+                      Add promo code
+                    </span>
+                  </div>
+                  <span className="text-green-600 text-sm font-semibold">
+                    Apply
+                  </span>
+                </button>
+              )}
+
+              {showPromoInput && !appliedCoupon && (
+                <div className="mb-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter code"
+                      value={promoCode}
+                      onChange={(e) =>
+                        setPromoCode(e.target.value.toUpperCase())
+                      }
+                      onKeyPress={(e) => e.key === "Enter" && applyPromocode()}
+                      className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 outline-none text-sm"
+                      disabled={isProcessing}
+                    />
+                    <button
+                      onClick={applyPromocode}
+                      disabled={isProcessing || !promoCode.trim()}
+                      className="px-4 py-2.5 bg-green-600 text-white font-semibold rounded-lg disabled:bg-gray-300 active:scale-95"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {appliedCoupon && (
+                <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">
+                      {appliedCoupon.code}
+                    </p>
+                    <p className="text-xs text-green-700">Discount applied</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setAppliedCoupon(null);
+                      setPromoCode("");
+                      toast.success("Promo code removed");
+                    }}
+                    className="text-red-600 text-sm font-bold active:scale-95"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
 
               {/* Price Summary */}
               <div className="mb-4">
@@ -1684,7 +1609,7 @@ const ShoppingCartPage = () => {
       {/* Mobile Bottom Footer */}
       <MobileBottomFooter />
 
-      {/* Checkout Modal - IMPORTANT: Only clears cart when orderSuccess is true */}
+      {/* Checkout Modal */}
       <CheckoutModal
         isOpen={showCheckoutModal}
         onClose={handleModalClose}

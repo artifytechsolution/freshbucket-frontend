@@ -290,58 +290,44 @@ const SignupComponent = () => {
           </div>
 
           {/* Hero Content */}
-          <div className="relative z-10 flex flex-col justify-center items-center h-full p-12 text-white">
-            <div className="text-center max-w-md">
-              <div className="flex justify-center mb-6">
+          <div className="relative z-10 flex flex-col justify-center items-center h-full p-12 text-white text-center">
+            <div className="max-w-md flex flex-col items-center">
+              {/* Logo Image */}
+              <div className="mb-6">
                 <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
-                  <FaLeaf className="h-12 w-12 text-white" />
+                  <img
+                    src="/logo3.png"
+                    alt="Logo"
+                    className="h-16 w-16 object-contain"
+                  />
                 </div>
               </div>
 
               <h1 className="text-4xl font-bold mb-4 leading-tight">
-                Join Our
+                Fresh & Healthy
                 <br />
-                <span className="text-green-200">Fresh Community</span>
+                <span className="text-green-200">Farm to Table</span>
               </h1>
 
               <p className="text-lg mb-8 text-green-100 leading-relaxed">
-                Start your journey to healthier living with the freshest organic
-                vegetables and fruits
+                Experience the finest organic vegetables and fruits delivered
+                fresh to your doorstep
               </p>
 
               {/* Features List */}
-              <div className="space-y-3 text-left mb-8">
-                <div className="flex items-center">
-                  <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3 flex-shrink-0" />
-                  <span className="text-sm">Free Delivery on First Order</span>
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center justify-center">
+                  <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3" />
+                  <span className="text-sm">100% Organic & Fresh</span>
                 </div>
-                <div className="flex items-center">
-                  <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3 flex-shrink-0" />
-                  <span className="text-sm">24/7 Customer Support</span>
+                <div className="flex items-center justify-center">
+                  <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3" />
+                  <span className="text-sm">Same Day Delivery</span>
                 </div>
-                <div className="flex items-center">
-                  <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3 flex-shrink-0" />
-                  <span className="text-sm">Money Back Guarantee</span>
+                <div className="flex items-center justify-center">
+                  <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3" />
+                  <span className="text-sm">Farm Direct Sourcing</span>
                 </div>
-              </div>
-
-              {/* Customer Stats */}
-              <div className="p-4 bg-white/10 backdrop-blur-sm rounded-lg">
-                <div className="flex items-center justify-center mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <AiOutlineStar
-                      key={i}
-                      className="h-4 w-4 text-yellow-300 fill-current"
-                    />
-                  ))}
-                  <span className="ml-2 text-sm font-medium">4.9/5 Rating</span>
-                </div>
-                <p className="text-xs text-green-100 italic">
-                  "Amazing quality and super fast delivery!"
-                </p>
-                <p className="text-xs text-green-200 mt-1 font-medium">
-                  - Join 10,000+ Happy Customers
-                </p>
               </div>
             </div>
           </div>
@@ -565,36 +551,6 @@ const SignupComponent = () => {
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-gray-300" />
                     </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-3 bg-white text-gray-500">
-                        Or sign up with
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Social Signup Buttons */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <button
-                      type="button"
-                      onClick={handleGoogleSignup}
-                      disabled={isSignupLoading || isOffline}
-                      className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 touch-manipulation"
-                      aria-label="Sign up with Google"
-                    >
-                      <AiFillGoogleCircle className="h-5 w-5 text-red-500" />
-                      <span className="ml-2">Google</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleFacebookSignup}
-                      disabled={isSignupLoading || isOffline}
-                      className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 touch-manipulation"
-                      aria-label="Sign up with Facebook"
-                    >
-                      <AiOutlineFacebook className="h-5 w-5 text-blue-600" />
-                      <span className="ml-2">Facebook</span>
-                    </button>
                   </div>
                 </form>
               </FormProvider>

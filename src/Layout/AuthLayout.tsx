@@ -13,11 +13,12 @@ import useAuth from "@src/hooks/useAuth";
 
 const AuthLayout: React.FC<ChildrenProps> = ({ children }) => {
   const { isLoggedIn } = useAuth();
+  console.log("isLoggedIn in AuthLayout:", isLoggedIn);
   const router = useRouter();
   const pathname = usePathname();
 
   const noAuthRoutes = ["/login", "/register"];
-  const authRoutes = ["/home"];
+  const authRoutes = ["/cart", "/orders", "/wishlist"];
 
   useEffect(() => {
     if (isLoggedIn && noAuthRoutes.includes(pathname)) {

@@ -203,7 +203,7 @@ export const selectCartItems = (state: RootState) =>
   state?.app?.cart?.items ?? [];
 
 export const selectCartTotal = (state: RootState) =>
-  state?.app?.cart?.items.reduce(
+  state?.app?.cart?.items?.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   ) ?? 0;

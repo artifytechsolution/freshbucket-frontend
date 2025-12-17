@@ -1,1485 +1,1584 @@
 "use client";
-import Header from "@src/component/components/header";
-import { useProductById } from "@src/hooks/apiHooks";
-import {
-  addToCart,
-  selectCartItems,
-  selectCartTotal,
-} from "@src/redux/reducers/authSlice";
-import { AppDispatch } from "@src/redux/store";
-import React, { useState, useEffect } from "react";
-import toast from "react-hot-toast";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import Header from "@src/component/components/header";
+import MobileBottomFooter from "@src/component/components/MobileFooter";
+import { useProductById } from "@src/hooks/apiHooks";
+import { addToCart, selectCartItems } from "@src/redux/reducers/authSlice";
+import { BASE_URL } from "@src/config/config";
 
-const ProductDetailPage = () => {
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("1kg");
-  const [selectvariant_id, setSelectvariant_id] = useState(null);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const [activeTab, setActiveTab] = useState("description");
-  const [scrollY, setScrollY] = useState(0);
+// React Icons Imports
+import {
+  FiChevronRight,
+  FiChevronUp,
+  FiHome,
+  FiStar,
+  FiHeart,
+  FiShoppingCart,
+  FiShare2,
+  FiMinus,
+  FiPlus,
+  FiInfo,
+  FiCheck,
+  FiAward,
+  FiThermometer,
+  FiDroplet,
+  FiCheckCircle,
+  FiCopy,
+  FiX,
+  FiPackage,
+  FiCoffee,
+  FiFileText,
+  FiPieChart,
+  FiTruck,
+  FiShield,
+  FiRefreshCw,
+  FiCalendar,
+  FiMapPin,
+  FiTag,
+} from "react-icons/fi";
+import { IoLeafOutline } from "react-icons/io5";
+import { TbWeight } from "react-icons/tb";
 
-  // Review Modal States
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewForm, setReviewForm] = useState({
-    rating: 0,
-    name: "",
-    email: "",
-    title: "",
-    comment: "",
-    recommend: true,
-  });
-  const [reviewErrors, setReviewErrors] = useState({});
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+// ==================== INTERFACES ====================
+interface ProductSize {
+  id: number;
+  weight: string;
+  price: number;
+  originalPrice: number;
+}
 
-  const dispatch = useDispatch<any>();
-  const items = useSelector(selectCartItems);
-  const total = useSelector(selectCartTotal);
+interface ProductNutrition {
+  calories: number;
+  carbs: string;
+  sugar: string;
+  fiber: string;
+  vitaminC: string;
+  potassium: string;
+  folate: string;
+  manganese: string;
+  servingSize: string;
+}
 
-  // Product details API call
-  const {
-    isError,
-    isLoading,
-    data: productData,
-    error,
-    mutate: fetchProducts,
-  } = useProductById();
+interface ProductStorage {
+  temperature: string;
+  humidity: string;
+  tips: string[];
+}
 
-  useEffect(() => {
-    fetchProducts({
-      id: "215cb8bb-1f54-4812-8390-5f05c7b121d4",
-    });
-  }, [fetchProducts]);
+interface ProductData {
+  id: string;
+  name: string;
+  tagline: string;
+  price: number;
+  originalPrice: number;
+  inStock: number;
+  category: string;
+  sku: string;
+  brand: string;
+  weight: string;
+  origin: string;
+  shelfLife: string;
+  certifications: string[];
+  images: string[];
+  sizes: ProductSize[];
+  description: string;
+  detailedDescription: string;
+  features: string[];
+  nutrition: ProductNutrition;
+  storage: ProductStorage;
+  uses: string[];
+  discount: number;
+  rating: number;
+  reviewCount: number;
+}
 
-  useEffect(() => {
-    if (productData && !isLoading) {
-      toast.success(productData?.message ?? "🎉 Product loaded successfully!");
+interface CartItem {
+  id: string;
+  name: string;
+  variant_id: number | null;
+  image: string;
+  selectedSize: string;
+  quantity: number;
+  price: number;
+  totalPrice: number;
+}
+
+interface RelatedProduct {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  discount: number;
+  weight: string;
+  image: string;
+  category?: string;
+  stock?: number;
+  rating?: number;
+}
+
+// ==================== CONSTANTS ====================
+const DEFAULT_PRODUCT_IMAGE =
+  "https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+
+const FEATURES_BADGES = [
+  {
+    icon: "FiTruck",
+    text: "Free Delivery",
+    bgColor: "bg-blue-50",
+    textColor: "text-blue-700",
+  },
+  {
+    icon: "IoLeafOutline",
+    text: "100% Organic",
+    bgColor: "bg-green-50",
+    textColor: "text-green-700",
+  },
+  {
+    icon: "FiShield",
+    text: "Quality Checked",
+    bgColor: "bg-purple-50",
+    textColor: "text-purple-700",
+  },
+];
+
+const TAB_CONFIG = [
+  {
+    id: "description" as const,
+    label: "Description",
+    icon: "FiFileText",
+  },
+  {
+    id: "nutrition" as const,
+    label: "Nutrition",
+    icon: "FiPieChart",
+  },
+  {
+    id: "storage" as const,
+    label: "Storage",
+    icon: "FiPackage",
+  },
+  {
+    id: "uses" as const,
+    label: "Uses",
+    icon: "FiCoffee",
+  },
+];
+
+// ==================== COMPONENTS ====================
+
+// 1. Breadcrumb Component
+const Breadcrumb = ({ productName }: { productName: string }) => (
+  <nav className="mb-4 px-2">
+    <div className="flex items-center text-xs text-gray-500 overflow-x-auto scrollbar-hide whitespace-nowrap py-2">
+      <Link
+        href="/"
+        className="hover:text-green-600 transition-colors flex items-center gap-1"
+      >
+        <FiHome className="w-3 h-3" />
+        <span className="hidden xs:inline">Home</span>
+      </Link>
+      <FiChevronRight className="w-3 h-3 mx-1 text-gray-400 flex-shrink-0" />
+      <Link href="/product" className="hover:text-green-600 transition-colors">
+        Products
+      </Link>
+      <FiChevronRight className="w-3 h-3 mx-1 text-gray-400 flex-shrink-0" />
+      <span className="text-gray-900 font-medium truncate max-w-[120px]">
+        {productName}
+      </span>
+    </div>
+  </nav>
+);
+
+// 2. Mobile Gallery Modal Component
+const MobileGalleryModal = ({
+  product,
+  selectedImageIndex,
+  setSelectedImageIndex,
+  showMobileGallery,
+  setShowMobileGallery,
+}: {
+  product: ProductData;
+  selectedImageIndex: number;
+  setSelectedImageIndex: (index: number) => void;
+  showMobileGallery: boolean;
+  setShowMobileGallery: (show: boolean) => void;
+}) => {
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && product.images.length > selectedImageIndex + 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    } else if (isRightSwipe && selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
     }
-    if (isError) {
-      toast.error(`🔒 ${error || "Failed to load product. Please try again."}`);
-    }
-  }, [productData, isLoading, error, isError]);
 
-  // Track scroll for header effects
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Map API response to product structure
-  const product = productData?.data?.data
-    ? {
-        id: productData.data.data.id,
-        name: productData.data.data.name,
-        tagline: "Freshly harvested organic mangoes",
-        price: productData.data.data.price,
-        originalPrice: productData.data.data.price * 1.2,
-        discount: 17,
-        rating: 4.8,
-        reviewCount: 0,
-        inStock: productData.data.data.stock,
-        category: productData.data.data.category.name,
-        sku: productData.data.data.sku,
-        brand: "Organic Farm Fresh",
-        weight: productData.data.data.variants[0]?.name || "1kg",
-        origin: "Organic Farms, India",
-        harvestDate: "September 25, 2025",
-        shelfLife: `${productData.data.data.expiryDays} days`,
-        certifications: ["India Organic", "FSSAI Approved"],
-        images: productData.data.data.images
-          .sort((a, b) => (b.isPrimary ? 1 : -1))
-          .map((img) => img.url),
-        sizes: productData.data.data.variants.map((variant) => ({
-          id: variant.id,
-          weight: variant.name,
-          price: variant.price,
-          originalPrice: variant.price * 1.2,
-        })),
-        description: productData.data.data.description,
-        detailedDescription:
-          "These organic tarbuch mangoes are grown with care in sustainable farms, free from synthetic pesticides and fertilizers. Hand-picked at peak ripeness, they offer a perfect balance of sweetness and juiciness, ideal for every occasion.",
-        features: [
-          "✓ 100% Certified Organic",
-          "✓ Hand-picked at peak ripeness",
-          "✓ Rich in flavor and nutrients",
-          "✓ Perfect for desserts & snacking",
-          "✓ Fresh daily delivery",
-          "✓ FSSAI Approved",
-        ],
-        nutrition: {
-          calories: 60,
-          carbs: "15g",
-          sugar: "13.7g",
-          fiber: "1.6g",
-          vitaminC: "36.4mg",
-          potassium: "168mg",
-          folate: "43mcg",
-          manganese: "0.1mg",
-          servingSize: "100g (about 1/2 mango)",
-        },
-        storage: {
-          temperature: "10-13°C",
-          humidity: "85-90%",
-          tips: [
-            "Store in a cool, dry place",
-            "Refrigerate to extend freshness",
-            "Do not wash until ready to eat",
-            `Use within ${productData.data.data.expiryDays} days for best quality`,
-          ],
-        },
-        uses: [
-          "Fresh eating and snacking",
-          "Smoothies and juice blends",
-          "Desserts and salads",
-          "Jam and preserve making",
-          "Baby food preparation",
-        ],
-        badges: ["Fresh Today", "Organic"],
-      }
-    : {};
-
-  const relatedProducts = [
-    {
-      id: 2,
-      name: "Organic Alphonso Mangoes",
-      price: 350,
-      originalPrice: 420,
-      discount: 17,
-      rating: 4.7,
-      weight: "1kg",
-      image:
-        "https://images.unsplash.com/photo-1591070486843-7a6d6b6835b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      id: 3,
-      name: "Fresh Kesar Mangoes",
-      price: 300,
-      originalPrice: 360,
-      discount: 17,
-      rating: 4.6,
-      weight: "1kg",
-      image:
-        "https://images.unsplash.com/photo-1592993638609-6b35a7da496f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      id: 4,
-      name: "Organic Banganapalli Mangoes",
-      price: 280,
-      originalPrice: 336,
-      discount: 17,
-      rating: 4.8,
-      weight: "1kg",
-      image:
-        "https://images.unsplash.com/photo-1591070487530-8a6d6b6835b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    },
-  ];
-
-  const reviews = [
-    {
-      name: "Priya Sharma",
-      rating: 5,
-      title: "Delicious Mangoes!",
-      comment:
-        "These tarbuch mangoes are incredibly sweet and juicy. Perfect for smoothies and desserts. Fresh delivery!",
-      date: "2 days ago",
-      verified: true,
-      helpful: 10,
-    },
-    {
-      name: "Rajesh Kumar",
-      rating: 5,
-      title: "Best Quality",
-      comment:
-        "The best mangoes I've bought online. Really fresh and flavorful. Will order again!",
-      date: "1 week ago",
-      verified: true,
-      helpful: 8,
-    },
-    {
-      name: "Sneha Patel",
-      rating: 4,
-      title: "Great Taste",
-      comment:
-        "Very fresh and tasty mangoes. Slightly expensive but worth the quality. Good packaging.",
-      date: "2 weeks ago",
-      verified: true,
-      helpful: 5,
-    },
-  ];
-
-  const selectedSizeDetails =
-    product.sizes?.find((size) => size.weight === selectedSize) ||
-    product.sizes?.[0] ||
-    {};
-
-  const openReviewModal = () => {
-    setShowReviewModal(true);
-    document.body.style.overflow = "hidden";
+    setTouchStart(0);
+    setTouchEnd(0);
   };
 
-  const closeReviewModal = () => {
-    setShowReviewModal(false);
-    document.body.style.overflow = "unset";
-    setReviewForm({
-      rating: 0,
-      name: "",
-      email: "",
-      title: "",
-      comment: "",
-      recommend: true,
-    });
-    setReviewErrors({});
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = DEFAULT_PRODUCT_IMAGE;
   };
 
-  const handleReviewFormChange = (field, value) => {
-    setReviewForm((prev) => ({ ...prev, [field]: value }));
-    if (reviewErrors[field]) {
-      setReviewErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
+  if (!showMobileGallery) return null;
 
-  const validateReviewForm = () => {
-    const errors = {};
-    if (reviewForm.rating === 0) errors.rating = "Please select a rating";
-    if (!reviewForm.name.trim()) errors.name = "Name is required";
-    if (!reviewForm.email.trim()) errors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(reviewForm.email))
-      errors.email = "Please enter a valid email";
-    if (!reviewForm.title.trim()) errors.title = "Review title is required";
-    if (!reviewForm.comment.trim())
-      errors.comment = "Review comment is required";
-    else if (reviewForm.comment.length < 10)
-      errors.comment = "Comment must be at least 10 characters long";
-    return errors;
-  };
-
-  const submitReview = async (e) => {
-    e.preventDefault();
-    const errors = validateReviewForm();
-    if (Object.keys(errors).length > 0) {
-      setReviewErrors(errors);
-      return;
-    }
-    setIsSubmittingReview(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      alert("Review submitted successfully! Thank you for your feedback.");
-      closeReviewModal();
-    } catch (error) {
-      alert("Failed to submit review. Please try again.");
-    } finally {
-      setIsSubmittingReview(false);
-    }
-  };
-
-  // ENHANCED ADD TO CART FUNCTION WITH MINIMAL REQUIRED DATA
-  const addtoCart = () => {
-    // Create minimal cart item with only required data for cart page
-    const item = {
-      id: product.id,
-      name: product.name,
-      variant_id: selectvariant_id,
-      image: product.images?.[0], // Only first image
-      selectedSize,
-      quantity,
-      price: selectedSizeDetails.price,
-      totalPrice: selectedSizeDetails.price * quantity,
-    };
-
-    console.log("item is here 929--------->");
-    console.log(item);
-
-    dispatch(addToCart(item));
-
-    // Console log minimal required data
-    console.log("=== CART ITEM DATA ===");
-    console.log("Product ID:", item.id);
-    console.log("Product Name:", item.name);
-    console.log("Product Image:", item.image);
-    console.log("Selected Size:", item.selectedSize);
-    console.log("Quantity:", item.quantity);
-    console.log("Price:", item.price);
-    console.log("Total Price:", item.totalPrice);
-    console.log("Cart Item Object:", item);
-    console.log("=====================");
-
-    setCartItems([...cartItems, item]);
-    alert(
-      `Added ${quantity} × ${selectedSize} ${product.name} to cart! Total: ₹${
-        selectedSizeDetails.price * quantity
-      }`
-    );
-  };
-
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
-  };
-
-  const incrementQuantity = () => setQuantity((prev) => prev + 1);
-  const decrementQuantity = () =>
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-red-500 text-lg">
-          Error loading product: {error?.message || "Please try again."}
-        </p>
-      </div>
-    );
-  }
-
-  console.log("item is here123--------->");
-  console.log(items);
-  console.log(total);
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="fixed top-0 w-full z-50 shadow">
-        <Header />
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      <div className="flex items-center justify-between p-4 bg-black">
+        <button
+          onClick={() => setShowMobileGallery(false)}
+          className="text-white p-2"
+        >
+          <FiX className="w-6 h-6" />
+        </button>
+        <div className="text-white text-sm">
+          {selectedImageIndex + 1} / {product.images.length}
+        </div>
       </div>
 
-      {/* Main Content */}
-      <main className="pt-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Breadcrumb */}
-          <nav className="flex text-sm text-gray-500 mb-8">
-            <a href="#" className="hover:text-green-600">
-              Home
-            </a>
-            <span className="mx-2">/</span>
-            <a href="#" className="hover:text-green-600">
-              {product.category}
-            </a>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900 font-medium">{product.name}</span>
-          </nav>
+      <div
+        className="flex-1 relative flex items-center justify-center"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <img
+          src={product.images[selectedImageIndex]}
+          alt={product.name}
+          className="w-full h-auto max-h-[70vh] object-contain"
+          onError={handleImageError}
+        />
+      </div>
 
-          {/* Product Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mb-16">
-            {/* Product Images */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="aspect-square bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-200 relative group">
-                <img
-                  src={
-                    product.images?.[selectedImageIndex] ||
-                    "/placeholder-image.jpg"
-                  }
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                {/* Badges */}
-                <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                  {product.badges?.map((badge, index) => (
-                    <span
-                      key={index}
-                      className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg"
-                    >
-                      {badge}
-                    </span>
-                  ))}
-                </div>
-                {/* Discount Badge */}
-                <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                  -{product.discount}% OFF
-                </div>
-                {/* Image Navigation Arrows */}
-                {product.images?.length > 1 && (
-                  <>
-                    <button
-                      onClick={() =>
-                        setSelectedImageIndex((prev) =>
-                          prev > 0 ? prev - 1 : product.images.length - 1
-                        )
-                      }
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    >
-                      <svg
-                        className="w-5 h-5 text-gray-800"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M15 19l-7-7 7-7"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() =>
-                        setSelectedImageIndex((prev) =>
-                          prev < product.images.length - 1 ? prev + 1 : 0
-                        )
-                      }
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    >
-                      <svg
-                        className="w-5 h-5 text-gray-800"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
-                  </>
-                )}
-              </div>
+      <div className="p-4 bg-black">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {product.images.map((image, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedImageIndex(index)}
+              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                selectedImageIndex === index
+                  ? "border-green-500"
+                  : "border-gray-600"
+              }`}
+            >
+              <img
+                src={image}
+                alt={`${product.name} view ${index + 1}`}
+                className="w-full h-full object-cover"
+                onError={handleImageError}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-              {/* Image Thumbnails */}
-              {product.images?.length > 1 && (
-                <div className="flex space-x-3 overflow-x-auto pb-2">
-                  {product.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImageIndex(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all duration-200 ${
-                        selectedImageIndex === index
-                          ? "border-green-500 shadow-lg"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
+// 3. Product Images Component
+const ProductImages = ({
+  product,
+  selectedImageIndex,
+  setSelectedImageIndex,
+  isWishlisted,
+  toggleWishlist,
+  openShareModal,
+  showMobileGallery,
+  setShowMobileGallery,
+}: {
+  product: ProductData;
+  selectedImageIndex: number;
+  setSelectedImageIndex: (index: number) => void;
+  isWishlisted: boolean;
+  toggleWishlist: () => void;
+  openShareModal: () => void;
+  showMobileGallery: boolean;
+  setShowMobileGallery: (show: boolean) => void;
+}) => {
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && product.images.length > selectedImageIndex + 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    } else if (isRightSwipe && selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
+    }
+
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = DEFAULT_PRODUCT_IMAGE;
+  };
+
+  return (
+    <>
+      <div className="space-y-3 px-2">
+        {/* Main Image with Touch Controls */}
+        <div
+          ref={imageContainerRef}
+          className="relative bg-white rounded-xl shadow-sm overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onClick={() => setShowMobileGallery(true)}
+        >
+          <div className="aspect-square relative">
+            <img
+              src={product.images[selectedImageIndex]}
+              alt={product.name}
+              className="w-full h-full object-cover"
+              onError={handleImageError}
+            />
+
+            {/* Badges */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2">
+              {product.discount > 0 && (
+                <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full font-bold text-sm shadow-lg">
+                  {product.discount}% OFF
                 </div>
               )}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg flex items-center gap-2">
+                <IoLeafOutline className="w-3 h-3" />
+                <span className="hidden xs:inline">Organic</span>
+              </div>
             </div>
 
-            {/* Product Info */}
-            <div className="space-y-6">
-              {/* Header Info */}
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h1 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight">
-                      {product.name}
-                    </h1>
-                    <p className="text-lg text-gray-600 font-medium mt-2">
-                      {product.tagline}
-                    </p>
-                    <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                      <span>
-                        Brand:{" "}
-                        <span className="text-gray-900 font-medium">
-                          {product.brand}
-                        </span>
-                      </span>
-                      <span>
-                        SKU:{" "}
-                        <span className="text-gray-900 font-medium">
-                          {product.sku}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={toggleWishlist}
-                    className={`p-3 rounded-full transition-all duration-300 ${
-                      isWishlisted
-                        ? "bg-red-50 text-red-500"
-                        : "bg-gray-100 text-gray-400 hover:text-red-500"
-                    }`}
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill={isWishlisted ? "currentColor" : "none"}
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  </button>
-                </div>
+            {/* Image Counter */}
+            <div className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+              {selectedImageIndex + 1}/{product.images.length}
+            </div>
 
-                {/* Rating */}
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < Math.floor(product.rating)
-                            ? "text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="text-lg font-semibold text-gray-900">
-                    {product.rating}
-                  </span>
-                  <span className="text-gray-500">
-                    ({product.reviewCount} reviews)
-                  </span>
-                </div>
+            {/* Action Buttons */}
+            <div className="absolute top-3 right-3 flex flex-col gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleWishlist();
+                }}
+                className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow flex items-center justify-center hover:scale-110 transition-all duration-200"
+              >
+                <FiHeart
+                  className={`w-5 h-5 transition-all duration-200 ${
+                    isWishlisted
+                      ? "fill-red-500 text-red-500"
+                      : "text-gray-500 hover:text-red-500"
+                  }`}
+                />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openShareModal();
+                }}
+                className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow flex items-center justify-center hover:scale-110 transition-all duration-200"
+              >
+                <FiShare2 className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+        </div>
 
-                {/* Price */}
-                <div className="flex items-center space-x-4">
-                  <span className="text-4xl font-black text-green-600">
-                    ₹{selectedSizeDetails.price}
-                  </span>
-                  <span className="text-xl text-gray-400 line-through">
-                    ₹{selectedSizeDetails.originalPrice?.toFixed(2)}
-                  </span>
-                  <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-bold">
-                    Save ₹
-                    {(
-                      selectedSizeDetails.originalPrice -
-                      selectedSizeDetails.price
-                    )?.toFixed(2)}
-                  </span>
-                </div>
+        {/* Thumbnail Gallery */}
+        <div
+          ref={galleryRef}
+          className="flex gap-2 overflow-x-auto scrollbar-hide pb-2"
+        >
+          {product.images.map((image, index) => (
+            <button
+              key={index}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImageIndex(index);
+              }}
+              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                selectedImageIndex === index
+                  ? "border-green-600 shadow scale-105"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <img
+                src={image}
+                alt={`${product.name} view ${index + 1}`}
+                className="w-full h-full object-cover"
+                onError={handleImageError}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
 
-                {/* Stock Status */}
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-green-600 font-semibold">
-                    In Stock ({product.inStock} available)
-                  </span>
-                </div>
+      <MobileGalleryModal
+        product={product}
+        selectedImageIndex={selectedImageIndex}
+        setSelectedImageIndex={setSelectedImageIndex}
+        showMobileGallery={showMobileGallery}
+        setShowMobileGallery={setShowMobileGallery}
+      />
+    </>
+  );
+};
 
-                {/* Product Details Quick Info */}
-                <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">Origin:</span>{" "}
-                      <span className="font-medium">{product.origin}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Harvest:</span>{" "}
-                      <span className="font-medium">{product.harvestDate}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Shelf Life:</span>{" "}
-                      <span className="font-medium">{product.shelfLife}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Weight:</span>{" "}
-                      <span className="font-medium">{selectedSize}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+// 4. Product Info Component
+const ProductInfo = ({
+  product,
+  selectedSize,
+  quantity,
+  currentPrice,
+  currentOriginalPrice,
+  setQuantity,
+  handleSizeSelect,
+  handleAddToCart,
+  handleBuyNow,
+  renderStars,
+}: {
+  product: ProductData;
+  selectedSize: string;
+  quantity: number;
+  currentPrice: number;
+  currentOriginalPrice: number;
+  setQuantity: (quantity: number) => void;
+  handleSizeSelect: (size: ProductSize) => void;
+  handleAddToCart: () => void;
+  handleBuyNow: () => void;
+  renderStars: (rating: number) => React.ReactNode;
+}) => {
+  const incrementQuantity = () => setQuantity(quantity + 1);
+  const decrementQuantity = () => setQuantity(quantity > 1 ? quantity - 1 : 1);
 
-              {/* Size Selection */}
-              <div className="space-y-3">
-                <label className="text-lg font-bold text-gray-900">
-                  Weight
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  {product.sizes?.map((size) => (
-                    <button
-                      key={size.weight}
-                      onClick={() => {
-                        setSelectedSize(size.weight),
-                          setSelectvariant_id(size.id);
-                      }}
-                      className={`px-6 py-3 rounded-2xl border-2 font-semibold transition-all duration-200 ${
-                        selectedSize === size.weight
-                          ? "border-green-500 bg-green-50 text-green-700"
-                          : "border-gray-200 text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="text-center">
-                        {/* <div>{size.id}</div> */}
-                        <div className="font-bold">{size.weight}</div>
-                        <div className="text-xs">₹{size.price}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+  return (
+    <div className="space-y-4 px-2">
+      {/* Category and Rating */}
 
-              {/* Quantity and Add to Cart */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-3">
-                    <label className="text-lg font-bold text-gray-900">
-                      Qty
-                    </label>
-                    <div className="flex items-center border-2 border-gray-200 rounded-2xl overflow-hidden">
-                      <button
-                        onClick={decrementQuantity}
-                        className="p-3 hover:bg-gray-100 transition-colors duration-200"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M20 12H4"
-                          />
-                        </svg>
-                      </button>
-                      <span className="px-6 py-3 font-bold text-lg min-w-[60px] text-center">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={incrementQuantity}
-                        className="p-3 hover:bg-gray-100 transition-colors duration-200"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="text-lg font-semibold text-gray-600">
-                    Total:{" "}
-                    <span className="text-green-600">
-                      ₹
-                      {(selectedSizeDetails.price * quantity).toLocaleString(
-                        "en-IN"
-                      )}
-                    </span>
-                  </div>
-                </div>
+      {/* Product Name */}
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
+        {product.name}
+      </h1>
 
-                {/* Add to Cart Button */}
-                <button
-                  onClick={addtoCart}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+      {/* Tagline */}
+      <p className="text-gray-600 text-sm sm:text-base">{product.tagline}</p>
+
+      {/* Price Section */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl sm:text-3xl font-bold text-gray-900">
+            ₹{currentPrice}
+          </span>
+          <span className="text-lg text-gray-400 line-through">
+            ₹{currentOriginalPrice}
+          </span>
+          {product.discount > 0 && (
+            <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
+              Save {product.discount}%
+            </span>
+          )}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">Inclusive of all taxes</div>
+      </div>
+
+      {/* Features Badges */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
+        {FEATURES_BADGES.map((badge, idx) => (
+          <div
+            key={idx}
+            className={`flex items-center gap-2 ${badge.bgColor} ${badge.textColor} px-3 py-2 rounded-lg text-xs`}
+          >
+            {badge.icon === "FiTruck" && <FiTruck className="w-4 h-4" />}
+            {badge.icon === "IoLeafOutline" && (
+              <IoLeafOutline className="w-4 h-4" />
+            )}
+            {badge.icon === "FiShield" && <FiShield className="w-4 h-4" />}
+            <span>{badge.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Stock Status */}
+      <div className="flex items-center gap-2">
+        <div
+          className={`w-2 h-2 rounded-full ${
+            product.inStock > 0 ? "bg-green-500 animate-pulse" : "bg-red-500"
+          }`}
+        />
+        <span
+          className={`text-sm font-medium ${
+            product.inStock > 0 ? "text-green-700" : "text-red-700"
+          }`}
+        >
+          {product.inStock > 0 ? "In Stock" : "Out of Stock"}
+        </span>
+        {product.inStock > 0 && product.inStock < 10 && (
+          <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-full">
+            Only {product.inStock} left!
+          </span>
+        )}
+      </div>
+
+      {/* Size Selection */}
+      {product.sizes.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-gray-900">
+            Select Size:
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {product.sizes.map((size) => (
+              <button
+                key={size.id}
+                onClick={() => handleSizeSelect(size)}
+                className={`px-3 py-3 rounded-lg border font-medium transition-all duration-200 ${
+                  selectedSize === size.weight
+                    ? "border-green-600 bg-green-50 text-green-700 shadow scale-105"
+                    : "border-gray-200 text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                <div className="text-sm font-semibold">{size.weight}</div>
+                <div className="text-xs text-gray-600 mt-1">₹{size.price}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quantity Selector */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-gray-900">Quantity:</label>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+            <button
+              onClick={decrementQuantity}
+              className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <FiMinus className="w-4 h-4" />
+            </button>
+            <div className="w-12 text-center font-bold text-gray-900">
+              {quantity}
+            </div>
+            <button
+              onClick={incrementQuantity}
+              className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <FiPlus className="w-4 h-4" />
+            </button>
+          </div>
+          <span className="text-sm font-semibold text-gray-900">
+            Total: ₹{currentPrice * quantity}
+          </span>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col gap-2 pt-2">
+        <button
+          onClick={handleAddToCart}
+          disabled={!product.inStock}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg shadow hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+        >
+          <FiShoppingCart className="w-5 h-5" />
+          <span>Add to Cart</span>
+        </button>
+
+        <button
+          onClick={handleBuyNow}
+          disabled={!product.inStock}
+          className="w-full bg-white hover:bg-gray-50 border-2 border-green-600 text-green-600 font-semibold py-3 px-4 rounded-lg shadow-sm hover:shadow transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+        >
+          <FiShoppingCart className="w-5 h-5" />
+          <span>Buy Now</span>
+        </button>
+      </div>
+
+      {/* Product Details Grid */}
+      <div className="pt-3 border-t border-gray-200">
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <FiPackage className="w-4 h-4 text-gray-400" />
+            <div>
+              <div className="text-gray-500">SKU</div>
+              <div className="font-medium">{product.sku}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <TbWeight className="w-4 h-4 text-gray-400" />
+            <div>
+              <div className="text-gray-500">Weight</div>
+              <div className="font-medium">{selectedSize}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <FiMapPin className="w-4 h-4 text-gray-400" />
+            <div>
+              <div className="text-gray-500">Origin</div>
+              <div className="font-medium">{product.origin}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <FiCalendar className="w-4 h-4 text-gray-400" />
+            <div>
+              <div className="text-gray-500">Shelf Life</div>
+              <div className="font-medium">{product.shelfLife}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Certifications */}
+      {product.certifications.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {product.certifications.map((cert, idx) => (
+            <div
+              key={idx}
+              className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium border border-blue-100"
+            >
+              <FiAward className="w-3 h-3" />
+              <span>{cert}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 5. Product Tabs Component
+const ProductTabs = ({
+  activeTab,
+  setActiveTab,
+  product,
+}: {
+  activeTab: "description" | "nutrition" | "storage" | "uses";
+  setActiveTab: (tab: "description" | "nutrition" | "storage" | "uses") => void;
+  product: ProductData;
+}) => {
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "description":
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {product.features.map((feature, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg"
                 >
-                  Add to Cart • ₹
-                  {(selectedSizeDetails.price * quantity).toLocaleString(
-                    "en-IN"
-                  )}
-                </button>
-              </div>
-
-              {/* Product Info Cards */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 p-4 rounded-2xl">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <svg
-                      className="w-5 h-5 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span className="font-bold text-green-800">
-                      Fast Delivery
-                    </span>
-                  </div>
-                  <p className="text-sm text-green-700">
-                    Same day delivery available
-                  </p>
+                  <FiCheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-800 text-sm">{feature}</span>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-2xl">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <svg
-                      className="w-5 h-5 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span className="font-bold text-blue-800">
-                      Quality Guaranteed
-                    </span>
-                  </div>
-                  <p className="text-sm text-blue-700">
-                    100% satisfaction guarantee
-                  </p>
-                </div>
-              </div>
+              ))}
+            </div>
+          </div>
+        );
 
-              {/* Certifications */}
-              <div className="flex flex-wrap gap-2">
-                {product.certifications?.map((cert, index) => (
-                  <span
-                    key={index}
-                    className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
+      case "nutrition":
+        return (
+          <div className="space-y-4">
+            <p className="text-gray-600 text-sm">
+              Per serving: {product.nutrition?.servingSize}
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {Object.entries(product.nutrition)
+                .filter(([key]) => key !== "servingSize")
+                .map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="bg-white border border-gray-200 p-3 rounded-lg"
                   >
-                    {cert}
-                  </span>
+                    <div className="text-lg font-bold text-green-700">
+                      {value}
+                    </div>
+                    <div className="text-xs text-gray-600 capitalize mt-1">
+                      {key.replace(/([A-Z])/g, " $1").trim()}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        );
+
+      case "storage":
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white border border-gray-200 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <FiThermometer className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Temperature</h4>
+                    <p className="text-gray-700 text-sm">
+                      {product.storage?.temperature}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <FiDroplet className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Humidity</h4>
+                    <p className="text-gray-700 text-sm">
+                      {product.storage?.humidity}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">Storage Tips</h4>
+              <div className="space-y-2">
+                {product.storage?.tips.map((tip, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg"
+                  >
+                    <FiCheck className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">{tip}</span>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
+        );
 
-          {/* Product Details Tabs */}
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden mb-16">
-            <div className="border-b border-gray-200 p-6">
-              <div className="flex space-x-8 overflow-x-auto">
-                {["description", "nutrition", "storage", "uses", "reviews"].map(
-                  (tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`font-semibold text-lg capitalize whitespace-nowrap pb-2 transition-colors duration-200 ${
-                        activeTab === tab
-                          ? "text-green-600 border-b-2 border-green-600"
-                          : "text-gray-600 hover:text-gray-900"
-                      }`}
-                    >
-                      {tab === "uses" ? "How to Use" : tab}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-
-            <div className="p-6">
-              {activeTab === "description" && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                      About This Product
-                    </h3>
-                    <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                      {product.description}
-                    </p>
-                    <p className="text-gray-700 leading-relaxed mb-6">
-                      {product.detailedDescription}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-gray-900 mb-4">
-                      Key Features
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {product.features?.map((feature, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-3 p-3 bg-green-50 rounded-xl"
-                        >
-                          <span className="text-lg text-gray-700">
-                            {feature}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
-                    <div className="text-center">
-                      <div className="text-2xl font-black text-green-600">
-                        100%
-                      </div>
-                      <div className="text-sm text-gray-600">Organic</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-black text-green-600">
-                        {product.inStock}
-                      </div>
-                      <div className="text-sm text-gray-600">In Stock</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-black text-green-600">
-                        {product.rating}
-                      </div>
-                      <div className="text-sm text-gray-600">Rating</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-black text-green-600">
-                        {product.reviewCount}
-                      </div>
-                      <div className="text-sm text-gray-600">Reviews</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "nutrition" && (
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Nutrition Facts
-                  </h3>
-                  <div className="bg-gray-50 rounded-2xl p-6">
-                    <div className="text-lg font-bold mb-4">
-                      Per {product.nutrition?.servingSize}
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.calories}
-                        </div>
-                        <div className="text-sm text-gray-600">Calories</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.carbs}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Carbohydrates
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.sugar}
-                        </div>
-                        <div className="text-sm text-gray-600">Sugar</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.fiber}
-                        </div>
-                        <div className="text-sm text-gray-600">Fiber</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.vitaminC}
-                        </div>
-                        <div className="text-sm text-gray-600">Vitamin C</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.potassium}
-                        </div>
-                        <div className="text-sm text-gray-600">Potassium</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.folate}
-                        </div>
-                        <div className="text-sm text-gray-600">Folate</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-gray-900">
-                          {product.nutrition?.manganese}
-                        </div>
-                        <div className="text-sm text-gray-600">Manganese</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "storage" && (
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Storage & Handling
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-blue-50 rounded-2xl p-6">
-                      <h4 className="text-xl font-bold text-blue-900 mb-4">
-                        Optimal Storage Conditions
-                      </h4>
-                      <div className="space-y-3">
-                        <div>
-                          <span className="text-blue-800 font-semibold">
-                            Temperature:
-                          </span>
-                          <span className="text-blue-700 ml-2">
-                            {product.storage?.temperature}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-blue-800 font-semibold">
-                            Humidity:
-                          </span>
-                          <span className="text-blue-700 ml-2">
-                            {product.storage?.humidity}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-green-50 rounded-2xl p-6">
-                      <h4 className="text-xl font-bold text-green-900 mb-4">
-                        Storage Tips
-                      </h4>
-                      <ul className="space-y-2">
-                        {product.storage?.tips.map((tip, index) => (
-                          <li
-                            key={index}
-                            className="flex items-start space-x-2"
-                          >
-                            <svg
-                              className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            <span className="text-green-700">{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "uses" && (
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    How to Use & Enjoy
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {product.uses?.map((use, index) => (
-                      <div
-                        key={index}
-                        className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 text-center"
-                      >
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                          <svg
-                            className="w-6 h-6 text-green-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                        <h4 className="text-lg font-bold text-gray-900 mb-2">
-                          {use}
-                        </h4>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "reviews" && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Customer Reviews
-                    </h3>
-                    <button
-                      onClick={openReviewModal}
-                      className="bg-green-600 text-white px-6 py-2 rounded-2xl font-semibold hover:bg-green-700 transition-colors duration-200"
-                    >
-                      Write Review
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                      <div className="text-4xl font-black text-gray-900 mb-2">
-                        {product.rating}
-                      </div>
-                      <div className="flex items-center justify-center space-x-1 mb-2">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`w-5 h-5 ${
-                              i < Math.floor(product.rating)
-                                ? "text-yellow-400"
-                                : "text-gray-300"
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Based on {product.reviewCount} reviews
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <div className="h-80 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                        {reviews.length > 0 ? (
-                          reviews.map((review, index) => (
-                            <div
-                              key={index}
-                              className="bg-gray-50 rounded-2xl p-6"
-                            >
-                              <div className="flex items-start justify-between mb-3">
-                                <div>
-                                  <div className="font-bold text-gray-900">
-                                    {review.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {review.date}
-                                  </div>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="flex items-center">
-                                    {[...Array(review.rating)].map((_, i) => (
-                                      <svg
-                                        key={i}
-                                        className="w-4 h-4 text-yellow-400"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                      >
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                      </svg>
-                                    ))}
-                                  </div>
-                                  {review.verified && (
-                                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                                      Verified
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <h4 className="font-bold text-gray-900 mb-2">
-                                {review.title}
-                              </h4>
-                              <p className="text-gray-700 mb-3">
-                                {review.comment}
-                              </p>
-                              <div className="flex items-center justify-between">
-                                <button className="text-gray-500 hover:text-green-600 text-sm flex items-center space-x-1">
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth="2"
-                                      d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                                    />
-                                  </svg>
-                                  <span>Helpful ({review.helpful})</span>
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-gray-600">
-                            No reviews yet. Be the first to share your
-                            experience!
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Related Products */}
-          <div className="space-y-8">
-            <h2 className="text-3xl font-black text-gray-900">
-              You Might Also Like
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedProducts.map((item) => (
+      case "uses":
+        return (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {product.uses.map((use, idx) => (
                 <div
-                  key={item.id}
-                  className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  key={idx}
+                  className="bg-white border border-gray-200 p-4 rounded-lg"
                 >
-                  <div className="aspect-square overflow-hidden relative">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 right-4 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                      -{item.discount}% OFF
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {idx + 1}
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      {item.name}
-                    </h3>
-                    <div className="text-sm text-gray-500 mb-2">
-                      {item.weight}
-                    </div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < Math.floor(item.rating)
-                                ? "text-yellow-400"
-                                : "text-gray-300"
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.720c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        ({item.rating})
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="text-2xl font-black text-green-600">
-                        ₹{item.price}
-                      </div>
-                      <div className="text-sm text-gray-400 line-through">
-                        ₹{item.originalPrice}
-                      </div>
-                    </div>
+                    <p className="text-gray-800 text-sm pt-1">{use}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const getTabIcon = (iconName: string) => {
+    switch (iconName) {
+      case "FiFileText":
+        return <FiFileText className="w-4 h-4" />;
+      case "FiPieChart":
+        return <FiPieChart className="w-4 h-4" />;
+      case "FiPackage":
+        return <FiPackage className="w-4 h-4" />;
+      case "FiCoffee":
+        return <FiCoffee className="w-4 h-4" />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 mx-2">
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
+        <div className="flex min-w-max">
+          {TAB_CONFIG.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-green-600 border-b-2 border-green-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {getTabIcon(tab.icon)}
+              <span className="text-sm">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      <div className="p-4">{renderTabContent()}</div>
+    </div>
+  );
+};
+
+// 6. Share Modal Component
+const ShareModal = ({
+  showShareModal,
+  shareLink,
+  isCopied,
+  closeShareModal,
+  copyToClipboard,
+  shareOnWhatsApp,
+}: {
+  showShareModal: boolean;
+  shareLink: string;
+  isCopied: boolean;
+  closeShareModal: () => void;
+  copyToClipboard: () => void;
+  shareOnWhatsApp: () => void;
+}) => {
+  if (!showShareModal) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full animate-fade-in">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 className="text-xl font-bold text-gray-900">
+            Share This Product
+          </h3>
+          <button
+            onClick={closeShareModal}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Close"
+          >
+            <FiX className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Share Link
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={shareLink}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-gray-50"
+              />
+              <button
+                onClick={copyToClipboard}
+                className={`px-4 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                  isCopied
+                    ? "bg-green-600 text-white"
+                    : "bg-green-50 text-green-700 hover:bg-green-100"
+                }`}
+              >
+                <FiCopy className="w-4 h-4" />
+                {isCopied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-4">
+              Share via
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <button
+                onClick={shareOnWhatsApp}
+                className="flex flex-col items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors group"
+              >
+                <div className="w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-full flex items-center justify-center mb-2 transition-colors">
+                  <FiShare2 className="w-6 h-6 text-green-600" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  WhatsApp
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 border-t border-gray-200">
+          <button
+            onClick={closeShareModal}
+            className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 7. Related Products Component
+const RelatedProducts = ({
+  relatedProducts,
+  loadingRelatedProducts,
+  handleRelatedProductClick,
+}: {
+  relatedProducts: RelatedProduct[];
+  loadingRelatedProducts: boolean;
+  handleRelatedProductClick: (id: string) => void;
+}) => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = DEFAULT_PRODUCT_IMAGE;
+  };
+
+  if (loadingRelatedProducts) {
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        {[1, 2].map((i) => (
+          <div
+            key={i}
+            className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 animate-pulse"
+          >
+            <div className="aspect-square bg-gray-200" />
+            <div className="p-3">
+              <div className="h-3 bg-gray-200 rounded mb-2" />
+              <div className="h-2 bg-gray-200 rounded w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-8 mx-2">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-gray-900">You May Also Like</h2>
+        <Link
+          href="/product"
+          className="text-green-600 hover:text-green-700 font-medium flex items-center gap-1 text-sm"
+        >
+          <span>View All</span>
+          <FiChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {relatedProducts.slice(0, 2).map((item) => (
+          <button
+            key={item.id}
+            onClick={() => handleRelatedProductClick(item.id)}
+            className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-100 text-left w-full"
+          >
+            <div className="relative aspect-square overflow-hidden">
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={handleImageError}
+              />
+              {item.discount > 0 && (
+                <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                  {item.discount}% OFF
+                </div>
+              )}
+            </div>
+            <div className="p-3">
+              <h3 className="font-medium text-gray-900 mb-1 line-clamp-2 text-sm">
+                {item.name}
+              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center">
+                  <FiStar className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                  <span className="text-xs text-gray-600 ml-1">
+                    {item.rating?.toFixed(1)}
+                  </span>
+                </div>
+                <span className="text-xs text-gray-500">{item.weight}</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-base font-bold text-gray-900">
+                  ₹{item.price}
+                </span>
+                <span className="text-xs text-gray-400 line-through">
+                  ₹{item.originalPrice}
+                </span>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// 8. Loading Skeleton Component
+const LoadingSkeleton = () => (
+  <div className="min-h-screen bg-gray-50">
+    <Header />
+    <div className="pt-20 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-64 mb-8"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="aspect-square bg-gray-200 rounded-2xl"></div>
+            <div className="space-y-4">
+              <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-12 bg-gray-200 rounded"></div>
+              <div className="h-12 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// 9. Error State Component
+const ErrorState = ({ onRetry }: { onRetry: () => void }) => (
+  <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <Header />
+    <div className="pt-24 flex justify-center items-center min-h-[50vh]">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FiInfo className="w-8 h-8 text-red-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
+          Product Not Found
+        </h3>
+        <p className="text-gray-600 mb-6">
+          The product you're looking for doesn't exist or failed to load.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ==================== MAIN COMPONENT ====================
+const ProductDetailPage = () => {
+  const params = useParams();
+  const router = useRouter();
+  const { slug } = params;
+
+  // ==================== STATE MANAGEMENT ====================
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(
+    null
+  );
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "description" | "nutrition" | "storage" | "uses"
+  >("description");
+  const [showScrollTopButton, setShowScrollTopButton] = useState(false);
+  const [isLoadingState, setIsLoadingState] = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLink, setShareLink] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
+  const [loadingRelatedProducts, setLoadingRelatedProducts] = useState(false);
+  const [showMoreDescription, setShowMoreDescription] = useState(false);
+  const [showMobileGallery, setShowMobileGallery] = useState(false);
+
+  // ==================== REDUX & API ====================
+  const dispatch = useDispatch();
+  const items = useSelector(selectCartItems);
+
+  const {
+    isError,
+    isLoading: apiLoading,
+    data: productData,
+    error,
+    mutate: fetchProducts,
+  } = useProductById();
+
+  // ==================== EFFECTS ====================
+  useEffect(() => {
+    if (slug) {
+      fetchProducts({
+        id: slug,
+      });
+    }
+  }, [fetchProducts, slug]);
+
+  useEffect(() => {
+    const handleApiResponse = () => {
+      if (productData && !apiLoading && productData?.data?.data?.variants) {
+        // REMOVED SUCCESS TOAST TO PREVENT SPAM
+        setIsLoadingState(false);
+
+        // Set share link
+        if (typeof window !== "undefined") {
+          setShareLink(`${window.location.origin}/productdetails/${slug}`);
+        }
+
+        // Initialize selected size and variant
+        const variants = productData.data.data.variants;
+        if (variants.length > 0) {
+          const firstVariant = variants[0];
+          setSelectedSize(firstVariant.name);
+          setSelectedVariantId(firstVariant.id);
+        }
+      }
+      if (isError) {
+        // SHOW ERROR TOAST
+        toast.error(
+          `🔒 ${error || "Failed to load product. Please try again."}`
+        );
+        setIsLoadingState(false);
+      }
+    };
+
+    handleApiResponse();
+  }, [productData, apiLoading, error, isError, slug]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        setLoadingRelatedProducts(true);
+        const response = await fetch(`${BASE_URL}/api/products?limit=4`);
+        const data = await response.json();
+
+        if (data.status === "success" && data.data?.data?.data) {
+          const products = data.data.data.data
+            .filter((item: any) => item.id !== slug)
+            .slice(0, 4)
+            .map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              originalPrice: item.price * 1.2,
+              discount: Math.round(
+                ((item.price * 1.2 - item.price) / (item.price * 1.2)) * 100
+              ),
+              weight: "1kg",
+              image: item.images?.[0]?.url || DEFAULT_PRODUCT_IMAGE,
+              category: item.category?.name,
+              stock: item.stock,
+              rating: 4.5,
+            }));
+
+          setRelatedProducts(products);
+        }
+      } catch (error) {
+        console.error("Error fetching related products:", error);
+        setRelatedProducts(fallbackRelatedProducts);
+      } finally {
+        setLoadingRelatedProducts(false);
+      }
+    };
+
+    fetchRelatedProducts();
+  }, [slug]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTopButton(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ==================== DATA TRANSFORMATION ====================
+  const transformProductData = useCallback((data: any): ProductData => {
+    return {
+      id: data.id,
+      name: data.name,
+      tagline: "Freshly harvested organic produce",
+      price: data.price,
+      originalPrice: data.price * 1.2,
+      inStock: data.stock,
+      category: data.category.name,
+      sku: data.sku,
+      brand: "Organic Farm Fresh",
+      weight: data.variants[0]?.name || "1kg",
+      origin: "Organic Farms, India",
+      shelfLife: `${data.expiryDays} days`,
+      certifications: ["India Organic", "FSSAI Approved"],
+      images:
+        data.images && data.images.length > 0
+          ? data.images
+              .sort((a, b) => (b.isPrimary ? 1 : -1))
+              .map((img: any) => img.url || DEFAULT_PRODUCT_IMAGE)
+          : [DEFAULT_PRODUCT_IMAGE],
+      sizes: data.variants.map((variant: any) => ({
+        id: variant.id,
+        weight: variant.name,
+        price: variant.price,
+        originalPrice: variant.price * 1.2,
+      })),
+      description: data.description,
+      detailedDescription:
+        "These organic products are grown with care in sustainable farms, free from synthetic pesticides and fertilizers. Hand-picked at peak ripeness, they offer a perfect balance of freshness and quality, ideal for every occasion.",
+      features: [
+        "✓ 100% Certified Organic",
+        "✓ Hand-picked at peak ripeness",
+        "✓ Rich in flavor and nutrients",
+        "✓ Perfect for healthy eating",
+        "✓ Fresh daily delivery",
+        "✓ FSSAI Approved",
+      ],
+      nutrition: {
+        calories: 60,
+        carbs: "15g",
+        sugar: "13.7g",
+        fiber: "1.6g",
+        vitaminC: "36.4mg",
+        potassium: "168mg",
+        folate: "43mcg",
+        manganese: "0.1mg",
+        servingSize: "100g",
+      },
+      storage: {
+        temperature: "10-13°C",
+        humidity: "85-90%",
+        tips: [
+          "Store in a cool, dry place",
+          "Refrigerate to extend freshness",
+          "Do not wash until ready to eat",
+          `Use within ${data.expiryDays} days for best quality`,
+        ],
+      },
+      uses: [
+        "Fresh eating and snacking",
+        "Smoothies and juice blends",
+        "Desserts and salads",
+        "Cooking and meal preparation",
+        "Healthy food preparation",
+      ],
+      discount: Math.round(
+        ((data.price * 1.2 - data.price) / (data.price * 1.2)) * 100
+      ),
+      rating: 4.8,
+      reviewCount: 128,
+    };
+  }, []);
+
+  const product: ProductData | null = productData?.data?.data
+    ? transformProductData(productData.data.data)
+    : null;
+
+  // Fallback related products
+  const fallbackRelatedProducts: RelatedProduct[] = [
+    {
+      id: "2",
+      name: "Organic Fresh Produce",
+      price: 350,
+      originalPrice: 420,
+      discount: 17,
+      weight: "1kg",
+      image: DEFAULT_PRODUCT_IMAGE,
+      rating: 4.5,
+    },
+    {
+      id: "3",
+      name: "Fresh Organic Items",
+      price: 300,
+      originalPrice: 360,
+      discount: 17,
+      weight: "1kg",
+      image: DEFAULT_PRODUCT_IMAGE,
+      rating: 4.7,
+    },
+    {
+      id: "4",
+      name: "Premium Organic Products",
+      price: 280,
+      originalPrice: 336,
+      discount: 17,
+      weight: "1kg",
+      image: DEFAULT_PRODUCT_IMAGE,
+      rating: 4.3,
+    },
+    {
+      id: "5",
+      name: "Organic Greens Bundle",
+      price: 420,
+      originalPrice: 500,
+      discount: 16,
+      weight: "1.5kg",
+      image: DEFAULT_PRODUCT_IMAGE,
+      rating: 4.9,
+    },
+  ];
+
+  const displayRelatedProducts =
+    relatedProducts.length > 0 ? relatedProducts : fallbackRelatedProducts;
+
+  // ==================== EVENT HANDLERS ====================
+  const handleAddToCart = () => {
+    if (!product || !selectedSizeDetails) {
+      toast.error("Please select a size before adding to cart.");
+      return;
+    }
+
+    const item: CartItem = {
+      id: product.id,
+      name: product.name,
+      variant_id: selectedVariantId,
+      image: product.images[0] || DEFAULT_PRODUCT_IMAGE,
+      selectedSize,
+      quantity,
+      price: currentPrice,
+      totalPrice: currentPrice * quantity,
+    };
+
+    dispatch(addToCart(item));
+    toast.success(
+      `Added ${quantity} × ${selectedSize} ${product.name} to cart! Total: ₹${
+        currentPrice * quantity
+      }`
+    );
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    router.push("/checkout");
+  };
+
+  const toggleWishlist = () => {
+    setIsWishlisted(!isWishlisted);
+    toast.success(
+      isWishlisted ? "Removed from wishlist" : "Added to wishlist! 💚"
+    );
+  };
+
+  const handleSizeSelect = (size: ProductSize) => {
+    setSelectedSize(size.weight);
+    setSelectedVariantId(size.id);
+    setQuantity(1);
+  };
+
+  const openShareModal = () => {
+    setShowShareModal(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeShareModal = () => {
+    setShowShareModal(false);
+    document.body.style.overflow = "unset";
+    setIsCopied(false);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareLink);
+    setIsCopied(true);
+    toast.success("Link copied to clipboard!");
+    setTimeout(() => setIsCopied(false), 3000);
+  };
+
+  const shareOnWhatsApp = () => {
+    const text = `Check out this amazing product: ${product?.name}\n${shareLink}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+    closeShareModal();
+  };
+
+  const handleRelatedProductClick = (productId: string) => {
+    router.push(`/productdetails/${productId}`);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center">
+        {[...Array(5)].map((_, index) => (
+          <FiStar
+            key={index}
+            className={`w-3 h-3 sm:w-4 sm:h-4 ${
+              index < Math.floor(rating)
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-300"
+            }`}
+          />
+        ))}
+        <span className="text-xs sm:text-sm text-gray-600 ml-2">
+          {rating.toFixed(1)}
+        </span>
+      </div>
+    );
+  };
+
+  // ==================== DERIVED VALUES ====================
+  const selectedSizeDetails =
+    product?.sizes?.find((size) => size.weight === selectedSize) ||
+    product?.sizes?.[0];
+
+  const currentPrice = selectedSizeDetails?.price || product?.price || 0;
+  const currentOriginalPrice =
+    selectedSizeDetails?.originalPrice || product?.originalPrice || 0;
+
+  // ==================== LOADING STATE ====================
+  if (apiLoading || isLoadingState || !selectedSize) {
+    return <LoadingSkeleton />;
+  }
+
+  // ==================== ERROR STATE ====================
+  if (!product || isError) {
+    return <ErrorState onRetry={() => fetchProducts({ id: slug })} />;
+  }
+
+  // ==================== MAIN RENDER ====================
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <Header />
+      </div>
+
+      {/* Main Content */}
+      <main className="pt-4 pb-24 md:pb-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+          {/* Breadcrumb */}
+          <Breadcrumb productName={product.name} />
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mb-6">
+            {/* Product Images */}
+            <ProductImages
+              product={product}
+              selectedImageIndex={selectedImageIndex}
+              setSelectedImageIndex={setSelectedImageIndex}
+              isWishlisted={isWishlisted}
+              toggleWishlist={toggleWishlist}
+              openShareModal={openShareModal}
+              showMobileGallery={showMobileGallery}
+              setShowMobileGallery={setShowMobileGallery}
+            />
+
+            {/* Product Info */}
+            <ProductInfo
+              product={product}
+              selectedSize={selectedSize}
+              quantity={quantity}
+              currentPrice={currentPrice}
+              currentOriginalPrice={currentOriginalPrice}
+              setQuantity={setQuantity}
+              handleSizeSelect={handleSizeSelect}
+              handleAddToCart={handleAddToCart}
+              handleBuyNow={handleBuyNow}
+              renderStars={renderStars}
+            />
+          </div>
+
+          {/* Product Description */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 mx-2">
+            <div className="p-4">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">
+                Product Description
+              </h3>
+              <div
+                className={`${
+                  !showMoreDescription && "max-h-24 overflow-hidden"
+                } relative`}
+              >
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {product.detailedDescription}
+                </p>
+                {!showMoreDescription && (
+                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                )}
+              </div>
+              <button
+                onClick={() => setShowMoreDescription(!showMoreDescription)}
+                className="text-green-600 text-sm font-medium mt-2 flex items-center gap-1"
+              >
+                {showMoreDescription ? "Show Less" : "Read More"}
+                <FiChevronRight
+                  className={`w-4 h-4 transition-transform ${
+                    showMoreDescription ? "rotate-90" : ""
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Product Tabs */}
+          <ProductTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            product={product}
+          />
+
+          {/* Related Products */}
+          <RelatedProducts
+            relatedProducts={displayRelatedProducts}
+            loadingRelatedProducts={loadingRelatedProducts}
+            handleRelatedProductClick={handleRelatedProductClick}
+          />
         </div>
       </main>
 
-      {/* Review Modal */}
-      {showReviewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Write a Review
-              </h2>
-              <button
-                onClick={closeReviewModal}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-              >
-                <svg
-                  className="w-6 h-6 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <form onSubmit={submitReview} className="p-6 space-y-6">
-              <div>
-                <label className="block text-lg font-bold text-gray-900 mb-3">
-                  Rating *
-                </label>
-                <div className="flex items-center space-x-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => handleReviewFormChange("rating", star)}
-                      className="p-1 transition-colors duration-200"
-                    >
-                      <svg
-                        className={`w-8 h-8 ${
-                          star <= reviewForm.rating
-                            ? "text-yellow-400"
-                            : "text-gray-300 hover:text-yellow-300"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    </button>
-                  ))}
-                  <span className="ml-3 text-gray-600">
-                    {reviewForm.rating === 0
-                      ? "Select rating"
-                      : reviewForm.rating === 1
-                      ? "Poor"
-                      : reviewForm.rating === 2
-                      ? "Fair"
-                      : reviewForm.rating === 3
-                      ? "Good"
-                      : reviewForm.rating === 4
-                      ? "Very Good"
-                      : "Excellent"}
-                  </span>
-                </div>
-                {reviewErrors.rating && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {reviewErrors.rating}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-lg font-bold text-gray-900 mb-2">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={reviewForm.name}
-                    onChange={(e) =>
-                      handleReviewFormChange("name", e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Your name"
-                  />
-                  {reviewErrors.name && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {reviewErrors.name}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-lg font-bold text-gray-900 mb-2">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    value={reviewForm.email}
-                    onChange={(e) =>
-                      handleReviewFormChange("email", e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="your.email@example.com"
-                  />
-                  {reviewErrors.email && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {reviewErrors.email}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-lg font-bold text-gray-900 mb-2">
-                  Review Title *
-                </label>
-                <input
-                  type="text"
-                  value={reviewForm.title}
-                  onChange={(e) =>
-                    handleReviewFormChange("title", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Give your review a title"
-                />
-                {reviewErrors.title && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {reviewErrors.title}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-lg font-bold text-gray-900 mb-2">
-                  Your Review *
-                </label>
-                <textarea
-                  value={reviewForm.comment}
-                  onChange={(e) =>
-                    handleReviewFormChange("comment", e.target.value)
-                  }
-                  rows={5}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                  placeholder="Share your experience with this product..."
-                />
-                <div className="flex justify-between items-center mt-1">
-                  {reviewErrors.comment && (
-                    <p className="text-red-500 text-sm">
-                      {reviewErrors.comment}
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-500 ml-auto">
-                    {reviewForm.comment.length} characters
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="recommend"
-                  checked={reviewForm.recommend}
-                  onChange={(e) =>
-                    handleReviewFormChange("recommend", e.target.checked)
-                  }
-                  className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                />
-                <label
-                  htmlFor="recommend"
-                  className="text-gray-700 font-medium"
-                >
-                  I would recommend this product to others
-                </label>
-              </div>
-
-              <div className="flex space-x-4 pt-4">
-                <button
-                  type="button"
-                  onClick={closeReviewModal}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-2xl hover:border-gray-400 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingReview}
-                  className={`flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-2xl transition-all duration-200 ${
-                    isSubmittingReview
-                      ? "opacity-75 cursor-not-allowed"
-                      : "hover:bg-green-700 hover:shadow-lg"
-                  }`}
-                >
-                  {isSubmittingReview ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Submitting...</span>
-                    </div>
-                  ) : (
-                    "Submit Review"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Scroll to Top Button */}
+      {showScrollTopButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-4 w-12 h-12 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 flex items-center justify-center group"
+          aria-label="Scroll to top"
+        >
+          <FiChevronUp className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
+        </button>
       )}
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-xl font-black">Fresh Market</span>
-              </div>
-              <p className="text-gray-400 leading-relaxed">
-                Premium organic groceries delivered fresh to your doorstep
-                across India.
-              </p>
-            </div>
-            {[
-              {
-                title: "Shop",
-                links: ["All Products", "Fruits", "Vegetables", "Dairy"],
-              },
-              {
-                title: "Support",
-                links: ["Contact", "FAQ", "Returns", "Shipping"],
-              },
-              {
-                title: "Company",
-                links: ["About", "Careers", "Press", "Blog"],
-              },
-            ].map((section, index) => (
-              <div key={index} className="space-y-4">
-                <h3 className="font-bold text-lg">{section.title}</h3>
-                <ul className="space-y-2">
-                  {section.links.map((link, linkIndex) => (
-                    <li key={linkIndex}>
-                      <a
-                        href="#"
-                        className="text-gray-400 hover:text-white transition-colors duration-200"
-                      >
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="border-t border-gray-800 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2025 Fresh Market. All rights reserved. Made in India 🇮🇳
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Share Modal */}
+      <ShareModal
+        showShareModal={showShareModal}
+        shareLink={shareLink}
+        isCopied={isCopied}
+        closeShareModal={closeShareModal}
+        copyToClipboard={copyToClipboard}
+        shareOnWhatsApp={shareOnWhatsApp}
+      />
 
-      <style jsx global>{`
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 6px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
-          border-radius: 10px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: #a8a8a8;
-        }
-      `}</style>
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomFooter />
     </div>
   );
 };
