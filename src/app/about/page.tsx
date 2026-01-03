@@ -322,7 +322,7 @@ const AboutPage: React.FC = () => {
       name: "Priya Sharma",
       location: "Mumbai, Maharashtra",
       rating: 5,
-      text: "FreshBucket has transformed our family's eating habits. The organic vegetables are always crisp and flavorful.",
+      text: "FreshBucket has transformed our family's eating habits. The fresh vegetables are always crisp and flavorful.",
       avatar:
         "https://images.unsplash.com/photo-1494790108755-2616b612b1a1?auto=format&fit=crop&w=100&q=80",
       highlight: "Family health transformed",
@@ -361,7 +361,7 @@ const AboutPage: React.FC = () => {
       title: "Our Mission",
       subtitle: "Freshness Delivered in 60 minutes",
       content:
-        "To revolutionize how India eats by delivering farm-fresh, 100% organic fruits and vegetables directly to urban households within 60 minutes. We make healthy eating convenient and accessible.",
+        "To revolutionize how India eats by delivering farm-fresh, 100% fresh fruits and vegetables directly to urban households within 60 minutes. We make healthy eating convenient and accessible.",
       points: [
         "30-minute delivery guarantee",
         "Direct sourcing from farms",
@@ -408,7 +408,7 @@ const AboutPage: React.FC = () => {
       },
       {
         title: "Sustainable",
-        desc: "Eco-friendly packaging. Organic practices.",
+        desc: "Eco-friendly packaging. fresh practices.",
         icon: <Icons.Leaf />,
         color: "bg-emerald-50 text-emerald-600",
       },
@@ -433,7 +433,7 @@ const AboutPage: React.FC = () => {
       description: "Hand-picked daily from certified farms",
       icon: <Icons.Tractor />,
       color: "text-green-600 bg-green-50",
-      details: ["Organic", "No Chemicals"],
+      details: ["fresh", "No Chemicals"],
     },
     {
       title: "Super Fast",
@@ -462,7 +462,7 @@ const AboutPage: React.FC = () => {
     {
       step: "01",
       title: "Farm Selection",
-      description: "Certified organic farms",
+      description: "Certified fresh farms",
       icon: <Icons.Leaf />,
     },
     {
@@ -585,7 +585,7 @@ const AboutPage: React.FC = () => {
                 <span className="text-gradient">To Your Doorstep</span>
               </h1>
               <p className="text-gray-500 text-base md:text-xl max-w-2xl mb-10 leading-relaxed">
-                Experience the taste of 100% organic produce delivered directly
+                Experience the taste of 100% fresh produce delivered directly
                 from local farms to your kitchen in under 60 minutes.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">

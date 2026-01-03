@@ -58,7 +58,7 @@ const WishlistPage = () => {
             wishlistId: item.wishlist_id,
             name: item.product.name,
             description:
-              item.product.description || "Premium quality organic product",
+              item.product.description || "Premium quality fresh product",
             price: item.product.price,
             originalPrice:
               item.product.originalPrice || item.product.price * 1.2,
@@ -76,7 +76,7 @@ const WishlistPage = () => {
             category: item.product.category || "Fresh Produce",
             discount:
               Math.random() > 0.7 ? Math.floor(Math.random() * 30) + 10 : 0,
-            isOrganic: Math.random() > 0.5,
+            isfresh: Math.random() > 0.5,
             isBestSeller: Math.random() > 0.7,
           }));
 
@@ -360,9 +360,9 @@ const WishlistPage = () => {
                                   {item.discount}% OFF
                                 </div>
                               )}
-                              {item.isOrganic && (
+                              {item.isfresh && (
                                 <div className="bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded">
-                                  Organic
+                                  fresh
                                 </div>
                               )}
                             </div>
@@ -505,9 +505,9 @@ const WishlistPage = () => {
                                   <h3 className="text-base font-bold text-gray-900 truncate">
                                     {item.name}
                                   </h3>
-                                  {item.isOrganic && (
+                                  {item.isfresh && (
                                     <span className="px-1.5 py-0.5 bg-green-50 text-green-700 text-xs font-medium rounded">
-                                      🌱 Organic
+                                      🌱 fresh
                                     </span>
                                   )}
                                 </div>
@@ -613,8 +613,8 @@ const WishlistPage = () => {
                     {[
                       {
                         icon: IoLeafOutline,
-                        title: "100% Organic",
-                        desc: "Certified organic produce",
+                        title: "100% fresh",
+                        desc: "Certified fresh produce",
                         color: "text-green-600",
                         bgColor: "bg-green-50",
                       },

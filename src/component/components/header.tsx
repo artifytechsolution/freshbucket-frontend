@@ -31,7 +31,7 @@
 //   const [cartItems, setCartItems] = useState([
 //     {
 //       id: "strawberries",
-//       name: "Organic Strawberries",
+//       name: "fresh Strawberries",
 //       price: 2.99,
 //       unit: "1 lb",
 //       quantity: 2,
@@ -954,10 +954,10 @@
 //                     Sweet and juicy
 //                   </button>
 //                   <button
-//                     onClick={() => setSearchTerm("Organic")}
+//                     onClick={() => setSearchTerm("fresh")}
 //                     className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors"
 //                   >
-//                     Organic
+//                     fresh
 //                   </button>
 //                   <button
 //                     onClick={() => setSearchTerm("Fresh")}
@@ -1402,7 +1402,7 @@ const Header = () => {
   const [cartItems, setCartItems] = useState([
     {
       id: "strawberries",
-      name: "Organic Strawberries",
+      name: "fresh Strawberries",
       price: 2.99,
       unit: "1 lb",
       quantity: 2,
@@ -1838,7 +1838,7 @@ const Header = () => {
                   Fresh Buckets
                 </h1>
                 <p className="text-xs text-[#6AA84F] font-bold leading-tight opacity-80 hidden sm:block">
-                  Farm Fresh • Organic
+                  Farm Fresh • fresh
                 </p>
               </div>
             </Link>
@@ -2241,7 +2241,7 @@ const Header = () => {
                   Search Fresh Buckets
                 </h2>
                 <p className="text-[#4A5A42] text-sm lg:text-base">
-                  Find fresh groceries and organic produce
+                  Find fresh groceries and fresh produce
                 </p>
               </div>
               <button
@@ -2342,10 +2342,10 @@ const Header = () => {
                     Sweet and juicy
                   </button>
                   <button
-                    onClick={() => setSearchTerm("Organic")}
+                    onClick={() => setSearchTerm("fresh")}
                     className="px-3 py-1 bg-[#E4EDDF] text-[#6AA84F] rounded-full text-sm font-medium hover:bg-[#6AA84F] hover:text-white transition-colors"
                   >
-                    Organic
+                    fresh
                   </button>
                   <button
                     onClick={() => setSearchTerm("Fresh")}

@@ -119,9 +119,9 @@ const ContactPage = () => {
       icon: <FaClock className="w-4 h-4 sm:w-5 sm:h-5" />,
     },
     {
-      question: "Do you offer organic produce?",
+      question: "Do you offer fresh produce?",
       answer:
-        "Yes! We specialize in fresh, organic produce sourced from local farms. All our organic products are certified and we clearly mark organic items on our website and app.",
+        "Yes! We specialize in fresh, fresh produce sourced from local farms. All our fresh products are certified and we clearly mark fresh items on our website and app.",
       icon: <FaStore className="w-4 h-4 sm:w-5 sm:h-5" />,
     },
     {

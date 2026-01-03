@@ -310,7 +310,7 @@ const SignupComponent = () => {
               </h1>
 
               <p className="text-lg mb-8 text-green-100 leading-relaxed">
-                Experience the finest organic vegetables and fruits delivered
+                Experience the finest fresh vegetables and fruits delivered
                 fresh to your doorstep
               </p>
 
@@ -318,7 +318,7 @@ const SignupComponent = () => {
               <div className="space-y-3 mb-8">
                 <div className="flex items-center justify-center">
                   <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3" />
-                  <span className="text-sm">100% Organic & Fresh</span>
+                  <span className="text-sm">100% fresh & Fresh</span>
                 </div>
                 <div className="flex items-center justify-center">
                   <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3" />
@@ -581,7 +581,7 @@ const SignupComponent = () => {
                 </div>
                 <div className="flex items-center">
                   <FaLeaf className="h-4 w-4 text-green-500 mr-1" />
-                  <span>100% Organic</span>
+                  <span>100% fresh</span>
                 </div>
               </div>
             </div>

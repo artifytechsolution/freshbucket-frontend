@@ -257,7 +257,7 @@ const ForgotPasswordComponent = () => {
 
               <p className="text-lg mb-8 text-green-100 leading-relaxed">
                 No worries! We'll help you reset your password and get back to
-                enjoying fresh, organic produce
+                enjoying fresh, fresh produce
               </p>
 
               {/* Features List */}
@@ -473,7 +473,7 @@ const ForgotPasswordComponent = () => {
                 </div>
                 <div className="flex items-center">
                   <FaLeaf className="h-4 w-4 text-green-500 mr-1" />
-                  <span>100% Organic</span>
+                  <span>100% fresh</span>
                 </div>
               </div>
             </div>

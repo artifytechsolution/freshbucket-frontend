@@ -133,7 +133,7 @@ const FEATURES_BADGES = [
   },
   {
     icon: "IoLeafOutline",
-    text: "100% Organic",
+    text: "100% fresh",
     bgColor: "bg-green-50",
     textColor: "text-green-700",
   },
@@ -378,7 +378,7 @@ const ProductImages = ({
               )}
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg flex items-center gap-2">
                 <IoLeafOutline className="w-3 h-3" />
-                <span className="hidden xs:inline">Organic</span>
+                <span className="hidden xs:inline">fresh</span>
               </div>
             </div>
 
@@ -1228,17 +1228,17 @@ const ProductDetailPage = () => {
     return {
       id: data.id,
       name: data.name,
-      tagline: "Freshly harvested organic produce",
+      tagline: "Freshly harvested fresh produce",
       price: data.price,
       originalPrice: data.price * 1.2,
       inStock: data.stock,
       category: data.category.name,
       sku: data.sku,
-      brand: "Organic Farm Fresh",
+      brand: "fresh Farm Fresh",
       weight: data.variants[0]?.name || "1kg",
-      origin: "Organic Farms, India",
+      origin: "fresh Farms, India",
       shelfLife: `${data.expiryDays} days`,
-      certifications: ["India Organic", "FSSAI Approved"],
+      certifications: ["India fresh", "FSSAI Approved"],
       images:
         data.images && data.images.length > 0
           ? data.images
@@ -1253,9 +1253,9 @@ const ProductDetailPage = () => {
       })),
       description: data.description,
       detailedDescription:
-        "These organic products are grown with care in sustainable farms, free from synthetic pesticides and fertilizers. Hand-picked at peak ripeness, they offer a perfect balance of freshness and quality, ideal for every occasion.",
+        "These fresh products are grown with care in sustainable farms, free from synthetic pesticides and fertilizers. Hand-picked at peak ripeness, they offer a perfect balance of freshness and quality, ideal for every occasion.",
       features: [
-        "✓ 100% Certified Organic",
+        "✓ 100% Certified fresh",
         "✓ Hand-picked at peak ripeness",
         "✓ Rich in flavor and nutrients",
         "✓ Perfect for healthy eating",
@@ -1306,7 +1306,7 @@ const ProductDetailPage = () => {
   const fallbackRelatedProducts: RelatedProduct[] = [
     {
       id: "2",
-      name: "Organic Fresh Produce",
+      name: "fresh Fresh Produce",
       price: 350,
       originalPrice: 420,
       discount: 17,
@@ -1316,7 +1316,7 @@ const ProductDetailPage = () => {
     },
     {
       id: "3",
-      name: "Fresh Organic Items",
+      name: "Fresh fresh Items",
       price: 300,
       originalPrice: 360,
       discount: 17,
@@ -1326,7 +1326,7 @@ const ProductDetailPage = () => {
     },
     {
       id: "4",
-      name: "Premium Organic Products",
+      name: "Premium fresh Products",
       price: 280,
       originalPrice: 336,
       discount: 17,
@@ -1336,7 +1336,7 @@ const ProductDetailPage = () => {
     },
     {
       id: "5",
-      name: "Organic Greens Bundle",
+      name: "fresh Greens Bundle",
       price: 420,
       originalPrice: 500,
       discount: 16,

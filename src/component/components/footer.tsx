@@ -21,8 +21,8 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-[#DCE5D6] leading-relaxed mb-6">
-              Your trusted partner for fresh, organic groceries delivered fast
-              to your doorstep. Quality guaranteed, satisfaction assured.
+              Your trusted partner for fresh, fresh groceries delivered fast to
+              your doorstep. Quality guaranteed, satisfaction assured.
             </p>
 
             <div className="flex space-x-4">
@@ -309,7 +309,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/products?category=organic"
+                  href="/products?category=fresh"
                   className="text-[#DCE5D6] hover:text-[#6AA84F] transition-colors duration-200 flex items-center group"
                 >
                   <svg
@@ -325,7 +325,7 @@ const Footer = () => {
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
-                  Organic Products
+                  fresh Products
                 </Link>
               </li>
             </ul>

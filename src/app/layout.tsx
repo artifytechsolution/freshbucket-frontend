@@ -24,12 +24,12 @@ export const viewport = {
 };
 
 export const metadata: any = {
-  title: "Fresh Buckets - Farm Fresh Organic Groceries",
+  title: "Fresh Buckets - Farm Fresh fresh Groceries",
   description:
-    "Fresh organic groceries delivered to your doorstep in 60 minutes. Farm Fresh • Organic • Fast Delivery",
+    "Fresh fresh groceries delivered to your doorstep in 60 minutes. Farm Fresh • fresh • Fast Delivery",
   keywords: [
     "groceries",
-    "organic",
+    "fresh",
     "fresh",
     "delivery",
     "food",
@@ -47,7 +47,7 @@ export const metadata: any = {
     type: "website",
     url: "https://freshbuckets.com",
     title: "Fresh Buckets",
-    description: "Fresh organic groceries delivered in 60 minutes",
+    description: "Fresh fresh groceries delivered in 60 minutes",
     siteName: "Fresh Buckets",
   },
   twitter: {
@@ -72,7 +72,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Fresh Buckets" />
         <meta
           name="description"
-          content="Farm Fresh • Organic Groceries Delivered in 60 mins"
+          content="Farm Fresh • fresh Groceries Delivered in 60 mins"
         />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />

@@ -1102,7 +1102,7 @@ const ShoppingCartPage = () => {
                   Your cart is empty
                 </h3>
                 <p className="text-gray-600 text-sm lg:text-base mb-8">
-                  Add fresh organic products to your cart
+                  Add fresh fresh products to your cart
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button

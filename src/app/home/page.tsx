@@ -13,7 +13,7 @@
 //   const [cartItems, setCartItems] = useState([
 //     {
 //       id: "strawberries",
-//       name: "Organic Strawberries",
+//       name: "fresh Strawberries",
 //       price: 2.99,
 //       unit: "1 lb",
 //       quantity: 2,
@@ -36,7 +36,7 @@
 //   const products = [
 //     {
 //       id: 1,
-//       name: "Organic Strawberries",
+//       name: "fresh Strawberries",
 
 //       price: 2.99,
 //       unit: "per lb",
@@ -67,12 +67,12 @@
 //     },
 //     {
 //       id: 4,
-//       name: "Organic Bananas",
+//       name: "fresh Bananas",
 //       price: 1.49,
 //       unit: "2 lbs",
 //       image:
 //         "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-//       badge: "Organic",
+//       badge: "fresh",
 //       badgeColor: "bg-gradient-to-r from-yellow-500 to-yellow-600",
 //     },
 //     {
@@ -792,10 +792,10 @@
 //               </h3>
 //               <div className="flex flex-wrap gap-2">
 //                 <button
-//                   onClick={() => searchTerm_func("organic apples")}
+//                   onClick={() => searchTerm_func("fresh apples")}
 //                   className="px-3 lg:px-4 py-2 bg-gray-100 hover:bg-green-600 hover:text-white rounded-full text-sm font-medium transition-all duration-200"
 //                 >
-//                   Organic Apples
+//                   fresh Apples
 //                 </button>
 //                 <button
 //                   onClick={() => searchTerm_func("fresh milk")}
@@ -1034,7 +1034,7 @@
 //                 </h1>
 
 //                 <p className="text-base lg:text-lg text-gray-600 mb-6 lg:mb-8 leading-relaxed">
-//                   Premium quality organic produce, farm-fresh items, and
+//                   Premium quality fresh produce, farm-fresh items, and
 //                   everyday essentials delivered to your doorstep.
 //                 </p>
 
@@ -1069,7 +1069,7 @@
 //                         Fresh Today
 //                       </div>
 //                       <div className="text-xs text-green-600 font-medium">
-//                         Organic Spinach
+//                         fresh Spinach
 //                       </div>
 //                     </div>
 //                   </div>
@@ -1137,7 +1137,7 @@
 //                 </span>
 //               </h2>
 //               <p className="text-base lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-//                 Explore our wide selection of fresh, organic products across all
+//                 Explore our wide selection of fresh, fresh products across all
 //                 categories
 //               </p>
 //             </div>
@@ -1153,7 +1153,7 @@
 //                   Fresh Fruits
 //                 </h3>
 //                 <p className="text-xs lg:text-sm text-gray-600 mb-2 lg:mb-3">
-//                   Organic & seasonal fruits
+//                   fresh & seasonal fruits
 //                 </p>
 //                 <div className="text-xs text-green-600 font-medium">
 //                   500+ products
@@ -1460,7 +1460,7 @@ const FreshMartApp = () => {
   const [cartItems, setCartItems] = useState([
     {
       id: "strawberries",
-      name: "Organic Strawberries",
+      name: "fresh Strawberries",
       price: 2.99,
       unit: "1 lb",
       quantity: 2,
@@ -1483,7 +1483,7 @@ const FreshMartApp = () => {
   const products = [
     {
       id: 1,
-      name: "Organic Strawberries",
+      name: "fresh Strawberries",
       price: 2.99,
       unit: "per lb",
       image:
@@ -1513,12 +1513,12 @@ const FreshMartApp = () => {
     },
     {
       id: 4,
-      name: "Organic Bananas",
+      name: "fresh Bananas",
       price: 1.49,
       unit: "2 lbs",
       image:
         "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      badge: "Organic",
+      badge: "fresh",
       badgeColor: "bg-[#F2C94C]",
     },
     {
@@ -2135,9 +2135,7 @@ const FreshMartApp = () => {
                   </div>
                   <div>
                     <h2 className="font-black text-xl">Fresh Buckets</h2>
-                    <p className="text-white/90 text-sm">
-                      Farm Fresh • Organic
-                    </p>
+                    <p className="text-white/90 text-sm">Farm Fresh • fresh</p>
                   </div>
                 </div>
                 <button
@@ -2322,7 +2320,7 @@ const FreshMartApp = () => {
                   Search Fresh Buckets
                 </h2>
                 <p className="text-[#4A5A42] text-sm lg:text-base">
-                  Find fresh groceries and organic produce from 1000+ products
+                  Find fresh groceries and fresh produce from 1000+ products
                 </p>
               </div>
               <button
@@ -2364,7 +2362,7 @@ const FreshMartApp = () => {
               <input
                 type="text"
                 className="w-full pl-12 lg:pl-16 pr-16 lg:pr-20 py-4 lg:py-5 text-lg lg:text-xl border-2 border-[#DCE5D6] rounded-2xl focus:outline-none focus:ring-0 focus:border-[#6AA84F] bg-[#FAFCF8] shadow-sm transition-all duration-300 text-[#2F3E2C]"
-                placeholder="Search for fruits, vegetables, organic produce..."
+                placeholder="Search for fruits, vegetables, fresh produce..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus
@@ -2451,10 +2449,10 @@ const FreshMartApp = () => {
               </h3>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => searchTerm_func("organic apples")}
+                  onClick={() => searchTerm_func("fresh apples")}
                   className="px-3 lg:px-4 py-2 bg-[#E4EDDF] hover:bg-[#6AA84F] hover:text-white text-[#2F3E2C] rounded-full text-sm font-medium transition-all duration-200"
                 >
-                  Organic Apples
+                  fresh Apples
                 </button>
                 <button
                   onClick={() => searchTerm_func("fresh milk")}
@@ -2672,9 +2670,9 @@ const FreshMartApp = () => {
                 </h1>
 
                 <p className="text-base lg:text-lg text-[#4A5A42] mb-6 lg:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                  Premium quality organic produce, farm-fresh items, and
-                  everyday essentials delivered to your doorstep. Experience
-                  nature's best!
+                  Premium quality fresh produce, farm-fresh items, and everyday
+                  essentials delivered to your doorstep. Experience nature's
+                  best!
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-6 lg:mb-8 justify-center lg:justify-start">
@@ -2705,7 +2703,7 @@ const FreshMartApp = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="font-semibold">100% Organic</span>
+                    <span className="font-semibold">100% fresh</span>
                   </div>
                   <div className="flex items-center space-x-2 text-[#4A5A42]">
                     <svg
@@ -2758,7 +2756,7 @@ const FreshMartApp = () => {
                         Fresh Today
                       </div>
                       <div className="text-xs text-[#6AA84F] font-medium">
-                        Organic Spinach
+                        fresh Spinach
                       </div>
                     </div>
                   </div>
@@ -2991,7 +2989,7 @@ const FreshMartApp = () => {
                             </div>
                             <div className="flex-1">
                               <h4 className="text-white font-bold">
-                                Organic Strawberries
+                                fresh Strawberries
                               </h4>
                               <p className="text-white/80 text-sm">
                                 Fresh from farm
@@ -3113,7 +3111,7 @@ const FreshMartApp = () => {
                 Fresh <span className="text-[#6AA84F]">Categories</span>
               </h2>
               <p className="text-base lg:text-xl text-[#4A5A42] max-w-2xl mx-auto leading-relaxed">
-                Explore our wide selection of fresh, organic products across all
+                Explore our wide selection of fresh, fresh products across all
                 categories
               </p>
             </div>
@@ -3129,7 +3127,7 @@ const FreshMartApp = () => {
                     Fresh Fruits
                   </h3>
                   <p className="text-xs lg:text-sm text-[#4A5A42] mb-2 lg:mb-3">
-                    Organic & seasonal fruits
+                    fresh & seasonal fruits
                   </p>
                   <div className="text-xs text-[#6AA84F] font-medium">
                     500+ products

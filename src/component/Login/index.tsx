@@ -159,7 +159,7 @@ const LoginComponent = () => {
               </h1>
 
               <p className="text-lg mb-8 text-green-100 leading-relaxed">
-                Experience the finest organic vegetables and fruits delivered
+                Experience the finest fresh vegetables and fruits delivered
                 fresh to your doorstep
               </p>
 
@@ -167,7 +167,7 @@ const LoginComponent = () => {
               <div className="space-y-3 mb-8">
                 <div className="flex items-center justify-center">
                   <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3" />
-                  <span className="text-sm">100% Organic & Fresh</span>
+                  <span className="text-sm">100% fresh & Fresh</span>
                 </div>
                 <div className="flex items-center justify-center">
                   <AiOutlineCheckCircle className="h-5 w-5 text-green-200 mr-3" />
@@ -192,7 +192,7 @@ const LoginComponent = () => {
             {/* Mobile Hero Content - Only visible on mobile */}
             <div className="lg:hidden text-center p-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl text-white mb-6">
               <FaLeaf className="h-8 w-8 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Fresh & Organic</h3>
+              <h3 className="text-lg font-semibold mb-2">Fresh & fresh</h3>
               <p className="text-sm text-green-100">
                 Farm-fresh vegetables and fruits delivered to your door
               </p>
@@ -334,7 +334,7 @@ const LoginComponent = () => {
                 </div>
                 <div className="flex items-center">
                   <FaLeaf className="h-4 w-4 text-green-500 mr-1" />
-                  <span>100% Organic</span>
+                  <span>100% fresh</span>
                 </div>
               </div>
             </div>
