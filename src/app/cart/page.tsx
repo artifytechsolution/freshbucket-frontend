@@ -17,6 +17,7 @@ import {
   FiChevronRight,
   FiChevronDown,
   FiShoppingCart,
+  FiAlertCircle,
 } from "react-icons/fi";
 import { IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { useSelector, useDispatch } from "react-redux";
@@ -85,6 +86,9 @@ interface CartData {
 }
 
 // ==================== CONSTANTS ====================
+const FREE_DELIVERY_THRESHOLD = 100;
+const SHIPPING_CHARGE = 30;
+
 const STATIC_SOCIETIES: Society[] = [
   {
     id: 1,
@@ -365,25 +369,48 @@ const CartItemComponent = ({
   </div>
 );
 
-// 3. FreeDeliveryBanner Component
-const FreeDeliveryBanner = () => (
-  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4 lg:mb-6">
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <FiTruck className="text-white w-5 h-5 lg:w-6 lg:h-6" />
+// 3. FreeDeliveryBanner Component (Updated Logic)
+const FreeDeliveryBanner = ({ subtotal }: { subtotal: number }) => {
+  const isFree = subtotal > FREE_DELIVERY_THRESHOLD;
+  const amountNeeded = FREE_DELIVERY_THRESHOLD - subtotal;
+
+  return (
+    <div
+      className={`bg-gradient-to-r ${
+        isFree ? "from-green-50 to-emerald-50" : "from-orange-50 to-yellow-50"
+      } rounded-xl p-4 border ${
+        isFree ? "border-green-200" : "border-orange-200"
+      } mb-4 lg:mb-6 transition-all duration-300`}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className={`w-10 h-10 lg:w-12 lg:h-12 ${
+            isFree ? "bg-green-600" : "bg-orange-500"
+          } rounded-full flex items-center justify-center flex-shrink-0`}
+        >
+          <FiTruck className="text-white w-5 h-5 lg:w-6 lg:h-6" />
+        </div>
+        <div className="flex-1">
+          <p className="font-bold text-gray-900 text-sm lg:text-base">
+            {isFree
+              ? "Free Delivery!"
+              : `Add ₹${amountNeeded.toFixed(2)} for Free Delivery`}
+          </p>
+          <p className="text-gray-600 text-xs lg:text-sm">
+            {isFree
+              ? "Your order qualifies for free shipping"
+              : `Order above ₹${FREE_DELIVERY_THRESHOLD} to avoid shipping charges`}
+          </p>
+        </div>
+        {isFree ? (
+          <IoCheckmarkCircle className="text-green-600 w-6 h-6 lg:w-8 lg:h-8 flex-shrink-0" />
+        ) : (
+          <FiAlertCircle className="text-orange-500 w-6 h-6 lg:w-8 lg:h-8 flex-shrink-0" />
+        )}
       </div>
-      <div className="flex-1">
-        <p className="font-bold text-gray-900 text-sm lg:text-base">
-          Free Delivery!
-        </p>
-        <p className="text-gray-600 text-xs lg:text-sm">
-          Your order qualifies for free shipping
-        </p>
-      </div>
-      <IoCheckmarkCircle className="text-green-600 w-6 h-6 lg:w-8 lg:h-8 flex-shrink-0" />
     </div>
-  </div>
-);
+  );
+};
 
 // 4. PromoCodeSection Component
 const PromoCodeSection = ({
@@ -482,16 +509,18 @@ const PromoCodeSection = ({
   return null;
 };
 
-// 5. PriceBreakdown Component
+// 5. PriceBreakdown Component (Updated Logic)
 const PriceBreakdown = ({
   cartItems,
   subtotal,
   discount,
+  shipping,
   total,
 }: {
   cartItems: CartItem[];
   subtotal: number;
   discount: number;
+  shipping: number;
   total: number;
 }) => (
   <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
@@ -503,7 +532,13 @@ const PriceBreakdown = ({
     </div>
     <div className="flex justify-between">
       <span className="text-gray-600 text-sm">Shipping</span>
-      <span className="font-bold text-green-600">FREE</span>
+      <span
+        className={`font-bold ${
+          shipping === 0 ? "text-green-600" : "text-gray-900"
+        }`}
+      >
+        {shipping === 0 ? "FREE" : `₹${shipping}`}
+      </span>
     </div>
     {discount > 0 && (
       <div className="flex justify-between text-green-700">
@@ -542,7 +577,7 @@ const TrustBadges = () => (
     </div>
     <div className="flex items-center gap-2 text-xs text-gray-600">
       <FiTruck className="text-gray-400 w-3 h-3" />
-      <span>Free shipping</span>
+      <span>Free shipping on orders above ₹{FREE_DELIVERY_THRESHOLD}</span>
     </div>
     <div className="flex items-center gap-2 text-xs text-gray-600">
       <IoCashOutline className="text-gray-400 w-3 h-3" />
@@ -818,7 +853,7 @@ const CheckoutModal = ({
         product_id: item.id,
         variant_id: item.variant_id || null,
         quantity: item.quantity,
-        price: parseFloat(item.price),
+        price: parseFloat(item.price.toString()),
         total: parseFloat((item.price * item.quantity).toFixed(2)),
       })),
       Address: shippingAddress,
@@ -1314,7 +1349,17 @@ const CheckoutModal = ({
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
-                      <span className="font-semibold text-green-600">FREE</span>
+                      <span
+                        className={`font-semibold ${
+                          cartData.shipping === 0
+                            ? "text-green-600"
+                            : "text-gray-900"
+                        }`}
+                      >
+                        {cartData.shipping === 0
+                          ? "FREE"
+                          : `₹${cartData.shipping}`}
+                      </span>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-gray-200">
                       <span className="font-bold text-gray-900">
@@ -1399,8 +1444,9 @@ const ShoppingCartPage = () => {
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
+  // --- Shipping Logic ---
   const subtotal = totalofcart;
-  const shipping = 0;
+  const shipping = subtotal > FREE_DELIVERY_THRESHOLD ? 0 : SHIPPING_CHARGE;
   const discount = appliedCoupon?.discountAmount || 0;
   const total = subtotal - discount + shipping;
 
@@ -1501,7 +1547,6 @@ const ShoppingCartPage = () => {
       setAppliedCoupon(null);
       router.push("/orders");
     }
-    // If orderSuccess is false (modal closed without completing order), do NOT clear cart
   };
 
   // Empty cart state
@@ -1559,7 +1604,7 @@ const ShoppingCartPage = () => {
           </div>
 
           {/* Free Delivery Banner */}
-          <FreeDeliveryBanner />
+          <FreeDeliveryBanner subtotal={subtotal} />
 
           <div className="lg:grid lg:grid-cols-3 lg:gap-6">
             {/* Cart Items */}
@@ -1601,6 +1646,7 @@ const ShoppingCartPage = () => {
                     cartItems={cartItems}
                     subtotal={subtotal}
                     discount={discount}
+                    shipping={shipping}
                     total={total}
                   />
 
@@ -1655,7 +1701,13 @@ const ShoppingCartPage = () => {
                 )}
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600 text-sm">Shipping</span>
-                  <span className="font-bold text-green-600">FREE</span>
+                  <span
+                    className={`font-bold ${
+                      shipping === 0 ? "text-green-600" : "text-gray-900"
+                    }`}
+                  >
+                    {shipping === 0 ? "FREE" : `₹${shipping}`}
+                  </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <div>
@@ -1684,7 +1736,7 @@ const ShoppingCartPage = () => {
       {/* Mobile Bottom Footer */}
       <MobileBottomFooter />
 
-      {/* Checkout Modal - IMPORTANT: Only clears cart when orderSuccess is true */}
+      {/* Checkout Modal */}
       <CheckoutModal
         isOpen={showCheckoutModal}
         onClose={handleModalClose}
