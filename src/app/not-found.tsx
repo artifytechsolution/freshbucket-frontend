@@ -47,12 +47,16 @@ export default function Farmer404Page() {
           <button
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onClick={() => (window.location.href = "/home")}
             className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
           >
             <Home size={20} />
             Back to Home
           </button>
-          <button className="flex-1 bg-white hover:bg-gray-50 text-green-700 font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 border-2 border-green-200">
+          <button
+            className="flex-1 bg-white hover:bg-gray-50 text-green-700 font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 border-2 border-green-200"
+            onClick={() => (window.location.href = "/home")}
+          >
             <ShoppingCart size={20} />
             Shop Now
           </button>

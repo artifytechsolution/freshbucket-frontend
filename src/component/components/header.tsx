@@ -1337,6 +1337,7 @@ import Image from "next/image";
 import { BASE_URL } from "@src/config/config";
 import { useRouter } from "next/navigation";
 import useAuth from "@src/hooks/useAuth";
+import { ShoppingCartIcon } from "lucide-react";
 
 // Custom debounce hook with proper cleanup
 const useDebounce = (value, delay) => {
@@ -1947,22 +1948,7 @@ const Header = () => {
               <div className="relative">
                 <Link href="/cart">
                   <button className="relative p-2 lg:p-3 rounded-xl hover:bg-[#E4EDDF] text-[#4A5A42] hover:text-[#6AA84F] transition-all duration-200 group">
-                    <svg
-                      className="w-5 h-5 group-hover:scale-110 transition-transform duration-200"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    <div className="absolute -top-1 -right-1 w-5 h-5 lg:w-6 lg:h-6 bg-[#E84C3D] rounded-full flex items-center justify-center text-xs text-white font-bold shadow-lg">
-                      {getTotalItems()}
-                    </div>
+                    <ShoppingCartIcon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
                   </button>
                 </Link>
               </div>
