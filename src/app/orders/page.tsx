@@ -6,6 +6,7 @@ import { selectUser } from "@src/redux/reducers/authSlice";
 import { useAppSelector } from "@src/redux/store";
 import Link from "next/link";
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import toast from "react-hot-toast";
 
 const OrdersPage = () => {
   // State management
@@ -46,7 +47,7 @@ const OrdersPage = () => {
         const userId = getUserId();
         console.log("Fetching orders for userId:", userId);
         if (!userId) {
-          throw new Error("User not authenticated");
+          toast.error("User not authenticated");
         }
 
         const response = await fetch(
@@ -62,7 +63,7 @@ const OrdersPage = () => {
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch orders: ${response.statusText}`);
+          toast.error(`Failed to fetch orders: ${response.statusText}`);
         }
 
         const result = await response.json();
@@ -84,7 +85,7 @@ const OrdersPage = () => {
           setTotalOrders(pagination.total);
           setHasMore(pagination.hasNext);
         } else {
-          throw new Error("Invalid response format");
+          toast.error("Invalid response format");
         }
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -203,7 +204,7 @@ const OrdersPage = () => {
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-12 text-center">
-            <div className="text-red-400 mb-4">
+            {/* <div className="text-red-400 mb-4">
               <svg
                 className="w-24 h-24 mx-auto"
                 fill="none"
@@ -217,21 +218,24 @@ const OrdersPage = () => {
                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-            </div>
+            </div> */}
+
+            {/* ✅ UPDATED TEXT */}
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              Failed to Load Orders
+              Order Not Found
             </h3>
-            <p className="text-base text-gray-600 mb-6">{error}</p>
+            <p className="text-base text-gray-600 mb-6">
+              We couldn’t find any orders for your account.
+            </p>
+
+            {/* Optional: Keep retry button */}
             <button
               onClick={() => {
-                setOrders([]);
-                setPage(1);
-                setHasMore(true);
-                fetchOrders(1);
+                window.location.href = "/home";
               }}
               className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
             >
-              Try Again
+              goto home
             </button>
           </div>
         </div>

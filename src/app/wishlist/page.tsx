@@ -37,7 +37,7 @@ const WishlistPage = () => {
 
         // Check if user is logged in
         if (!user?.user?.id) {
-          throw new Error("Please login to view your wishlist");
+          toast.error("Please login to view your wishlist");
         }
 
         const response = await fetch(
@@ -45,7 +45,7 @@ const WishlistPage = () => {
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch wishlist: ${response.status}`);
+          toast.error(`Failed to fetch wishlist: ${response.status}`);
         }
 
         const result = await response.json();
@@ -82,7 +82,7 @@ const WishlistPage = () => {
 
           setWishlistItems(transformedData);
         } else {
-          throw new Error(result.data.message || "Failed to load wishlist");
+          toast.error(result.data.message || "Failed to load wishlist");
         }
       } catch (err) {
         console.error("Error fetching wishlist:", err);
@@ -122,7 +122,7 @@ const WishlistPage = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to remove from wishlist");
+        toast.error("Failed to remove from wishlist");
       }
 
       const result = await response.json();
@@ -257,7 +257,7 @@ const WishlistPage = () => {
                 </p>
               </div>
               <button
-                onClick={() => router.push("/shop")}
+                onClick={() => router.push("/products")}
                 className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg lg:rounded-xl hover:bg-gray-50 transition-colors active:scale-95"
               >
                 <FiArrowLeft className="w-4 h-4" />
@@ -310,13 +310,13 @@ const WishlistPage = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                       <button
-                        onClick={() => router.push("/shop")}
+                        onClick={() => router.push("/products")}
                         className="px-5 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors active:scale-95 text-sm"
                       >
                         Start Shopping
                       </button>
                       <button
-                        onClick={() => router.push("/categories")}
+                        onClick={() => router.push("/products")}
                         className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors active:scale-95 text-sm"
                       >
                         Browse Categories
@@ -587,7 +587,7 @@ const WishlistPage = () => {
                         items in wishlist
                       </div>
                       <button
-                        onClick={() => router.push("/shop")}
+                        onClick={() => router.push("/products")}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors active:scale-95"
                       >
                         <FiArrowLeft className="w-4 h-4" />
