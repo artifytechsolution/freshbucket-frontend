@@ -23,12 +23,12 @@ const EcommerceProductListing3x3 = () => {
   const [userId, setUserId] = useState(null);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
-  const [showOnlyInStock, setShowOnlyInStock] = useState(false);
+  // REMOVED: showOnlyInStock state
   const [isProductsFetched, setIsProductsFetched] = useState(false);
   const [expandedFilterSections, setExpandedFilterSections] = useState({
     categories: true,
     price: false,
-    availability: true,
+    // REMOVED: availability section state
   });
 
   const user = useAppSelector(selectUser);
@@ -124,7 +124,7 @@ const EcommerceProductListing3x3 = () => {
     }
   }, [wishlistItems]);
 
-  // Map fetched products to component format (REMOVED RATING)
+  // Map fetched products to component format
   const products = React.useMemo(() => {
     try {
       if (
@@ -146,12 +146,13 @@ const EcommerceProductListing3x3 = () => {
               image:
                 p.images?.[0]?.url ||
                 "https://via.placeholder.com/400?text=No+Image",
-              inStock: p.stock > 0 && p.inStock === "AVILABLE",
+              // UPDATED: Forced In Stock Status
+              inStock: true,
               unit: "/ kg",
               description: p.description || "",
-              stock: p.stock || 0,
-              badge: p.stock > 0 ? "In Stock" : "Out of Stock",
-              badgeColor: p.stock > 0 ? "bg-green-500" : "bg-red-500",
+              stock: p.stock || 100, // Default to a positive number
+              badge: "In Stock",
+              badgeColor: "bg-green-500",
             };
           } catch (err) {
             console.error("Error mapping product:", p, err);
@@ -252,7 +253,7 @@ const EcommerceProductListing3x3 = () => {
     }
   };
 
-  // Enhanced Filtering (REMOVED RATING FILTER)
+  // Enhanced Filtering
   const filteredProducts = React.useMemo(() => {
     try {
       return products
@@ -279,11 +280,10 @@ const EcommerceProductListing3x3 = () => {
 
           const matchesPriceRange =
             product.price >= minPrice && product.price <= maxPrice;
-          const matchesStock = !showOnlyInStock || product.inStock;
 
-          return (
-            matchesCategory && matchesPrice && matchesPriceRange && matchesStock
-          );
+          // REMOVED: matchesStock check (always true now)
+
+          return matchesCategory && matchesPrice && matchesPriceRange;
         })
         .sort((a, b) => {
           try {
@@ -308,15 +308,7 @@ const EcommerceProductListing3x3 = () => {
       console.error("Error in filteredProducts:", error);
       return [];
     }
-  }, [
-    products,
-    selectedCategory,
-    priceFilter,
-    minPrice,
-    maxPrice,
-    sortBy,
-    showOnlyInStock,
-  ]);
+  }, [products, selectedCategory, priceFilter, minPrice, maxPrice, sortBy]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -329,14 +321,7 @@ const EcommerceProductListing3x3 = () => {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [
-    selectedCategory,
-    priceFilter,
-    sortBy,
-    minPrice,
-    maxPrice,
-    showOnlyInStock,
-  ]);
+  }, [selectedCategory, priceFilter, sortBy, minPrice, maxPrice]);
 
   // Clear all filters
   const clearAllFilters = () => {
@@ -345,7 +330,7 @@ const EcommerceProductListing3x3 = () => {
     setMinPrice(0);
     setMaxPrice(1000);
     setSortBy("featured");
-    setShowOnlyInStock(false);
+    // REMOVED: setShowOnlyInStock(false);
   };
 
   // Count active filters
@@ -354,9 +339,9 @@ const EcommerceProductListing3x3 = () => {
     if (selectedCategory !== "All") count++;
     if (priceFilter !== "all") count++;
     if (minPrice > 0 || maxPrice < 1000) count++;
-    if (showOnlyInStock) count++;
+    // REMOVED: if (showOnlyInStock) count++;
     return count;
-  }, [selectedCategory, priceFilter, minPrice, maxPrice, showOnlyInStock]);
+  }, [selectedCategory, priceFilter, minPrice, maxPrice]);
 
   // Toggle filter section
   const toggleFilterSection = (section) => {
@@ -555,38 +540,7 @@ const EcommerceProductListing3x3 = () => {
             </div>
           </FilterSection>
 
-          {/* Availability */}
-          <FilterSection title="Availability" section="availability">
-            <button
-              onClick={() => setShowOnlyInStock(!showOnlyInStock)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all mt-2 ${
-                showOnlyInStock
-                  ? "bg-green-600 text-white shadow-sm"
-                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <span>Show Only In Stock</span>
-              <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                  showOnlyInStock ? "bg-white" : "bg-gray-300"
-                }`}
-              >
-                {showOnlyInStock && (
-                  <svg
-                    className="w-3 h-3 text-green-600"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                )}
-              </div>
-            </button>
-          </FilterSection>
+          {/* REMOVED: Availability FilterSection */}
         </div>
 
         {/* Results Summary */}
@@ -828,25 +782,7 @@ const EcommerceProductListing3x3 = () => {
               </svg>
             </button>
           )}
-          {showOnlyInStock && (
-            <button
-              onClick={() => setShowOnlyInStock(false)}
-              className="inline-flex items-center bg-green-50 text-green-700 border border-green-200 px-2 py-1 rounded text-xs font-medium hover:bg-green-100 transition-colors"
-            >
-              In Stock Only
-              <svg
-                className="w-3 h-3 ml-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          )}
+          {/* REMOVED: In Stock Only tag */}
           {activeFiltersCount > 1 && (
             <button
               onClick={clearAllFilters}
@@ -860,7 +796,7 @@ const EcommerceProductListing3x3 = () => {
     </div>
   );
 
-  // Product Card Component (REMOVED RATING)
+  // Product Card Component
   const ProductCard = ({ product }) => {
     const productInWishlist = isInWishlist(product.id);
     const isProcessing = processingWishlist;
@@ -885,7 +821,7 @@ const EcommerceProductListing3x3 = () => {
                 />
               </Link>
 
-              {/* Badges */}
+              {/* Badges - Always In Stock */}
               <div className="absolute top-2 left-2">
                 <span
                   className={`${product.badgeColor} text-white text-xs font-medium px-2 py-1 rounded-full shadow-sm`}
@@ -893,15 +829,6 @@ const EcommerceProductListing3x3 = () => {
                   {product.badge}
                 </span>
               </div>
-
-              {/* Stock Status */}
-              {!product.inStock && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <span className="bg-gray-900 text-white px-3 py-1.5 rounded-full font-medium text-xs">
-                    Out of Stock
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Content */}
@@ -971,15 +898,8 @@ const EcommerceProductListing3x3 = () => {
                   href={`/productdetails/${product.id}`}
                   className="w-full lg:w-auto"
                 >
-                  <button
-                    className={`w-full lg:w-auto px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                      product.inStock
-                        ? "bg-green-600 hover:bg-green-700 text-white shadow-sm"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
-                    disabled={!product.inStock}
-                  >
-                    {product.inStock ? "View Details" : "Out of Stock"}
+                  <button className="w-full lg:w-auto px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-green-600 hover:bg-green-700 text-white shadow-sm">
+                    View Details
                   </button>
                 </Link>
               </div>
@@ -1006,7 +926,7 @@ const EcommerceProductListing3x3 = () => {
             />
           </Link>
 
-          {/* Badges */}
+          {/* Badges - Always In Stock */}
           <div className="absolute top-2 left-2">
             <span
               className={`${product.badgeColor} text-white text-xs font-medium px-2 py-1 rounded-full shadow-sm`}
@@ -1078,14 +998,7 @@ const EcommerceProductListing3x3 = () => {
             </button>
           </div>
 
-          {/* Stock Status */}
-          {!product.inStock && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <span className="bg-gray-900 text-white px-3 py-1.5 rounded-full font-medium text-xs">
-                Out of Stock
-              </span>
-            </div>
-          )}
+          {/* REMOVED: Out of Stock Overlay */}
         </div>
 
         {/* Product Info */}
@@ -1112,15 +1025,8 @@ const EcommerceProductListing3x3 = () => {
 
           {/* Action Button */}
           <Link href={`/productdetails/${product.id}`} className="block">
-            <button
-              className={`w-full py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 ${
-                product.inStock
-                  ? "bg-green-600 hover:bg-green-700 text-white hover:shadow-sm"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-              disabled={!product.inStock}
-            >
-              {product.inStock ? "View Details" : "Out of Stock"}
+            <button className="w-full py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 bg-green-600 hover:bg-green-700 text-white hover:shadow-sm">
+              View Details
             </button>
           </Link>
         </div>
@@ -1301,7 +1207,7 @@ const EcommerceProductListing3x3 = () => {
     </div>
   );
 
-  // Quick View Modal Component (REMOVED RATING)
+  // Quick View Modal Component
   const QuickViewModal = () => {
     if (!quickViewProduct) return null;
 
@@ -1346,7 +1252,7 @@ const EcommerceProductListing3x3 = () => {
                 />
               </div>
 
-              {/* Badges */}
+              {/* Badges - Always In Stock */}
               <div className="absolute top-3 left-3">
                 <span
                   className={`${quickViewProduct.badgeColor} text-white text-xs font-medium px-2 py-1 rounded-full shadow-sm`}
@@ -1375,21 +1281,13 @@ const EcommerceProductListing3x3 = () => {
                 </span>
               </div>
 
-              {/* Stock Status */}
-              {quickViewProduct.inStock ? (
-                <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg mb-4 border border-green-200">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-green-700 font-medium text-sm">
-                    In Stock • Available
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2 bg-red-50 px-3 py-2 rounded-lg mb-4 border border-red-200">
-                  <span className="text-red-700 font-medium text-sm">
-                    Out of Stock • Currently unavailable
-                  </span>
-                </div>
-              )}
+              {/* Stock Status - Always In Stock */}
+              <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg mb-4 border border-green-200">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-700 font-medium text-sm">
+                  In Stock • Available
+                </span>
+              </div>
 
               {/* Description */}
               {quickViewProduct.description && (
@@ -1413,32 +1311,31 @@ const EcommerceProductListing3x3 = () => {
                     View Full Details
                   </button>
                 </Link>
-                {!isInWishlist(quickViewProduct.id) &&
-                  quickViewProduct.inStock && (
-                    <button
-                      onClick={() => {
-                        handleAddToWishlist(quickViewProduct.id);
-                        setQuickViewProduct(null);
-                      }}
-                      disabled={processingWishlist || isAddingToWishlist}
-                      className="w-full border border-red-500 text-red-500 hover:bg-red-50 py-2.5 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center space-x-2"
+                {!isInWishlist(quickViewProduct.id) && (
+                  <button
+                    onClick={() => {
+                      handleAddToWishlist(quickViewProduct.id);
+                      setQuickViewProduct(null);
+                    }}
+                    disabled={processingWishlist || isAddingToWishlist}
+                    className="w-full border border-red-500 text-red-500 hover:bg-red-50 py-2.5 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center space-x-2"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                      <span>Add to Wishlist</span>
-                    </button>
-                  )}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                    <span>Add to Wishlist</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -49,6 +49,7 @@ interface ProductSize {
   weight: string;
   price: number;
   originalPrice: number;
+  stock: number; // CHANGED: Added stock property
 }
 
 interface ProductNutrition {
@@ -484,6 +485,10 @@ const ProductInfo = ({
   const incrementQuantity = () => setQuantity(quantity + 1);
   const decrementQuantity = () => setQuantity(quantity > 1 ? quantity - 1 : 1);
 
+  // CHANGED: Determine if the *selected* variant is in stock
+  const currentVariantStock =
+    product.sizes.find((s) => s.weight === selectedSize)?.stock || 0;
+
   return (
     <div className="space-y-4 px-2">
       {/* Category and Rating */}
@@ -531,23 +536,25 @@ const ProductInfo = ({
         ))}
       </div>
 
-      {/* Stock Status */}
+      {/* Stock Status - CHANGED: Shows status for currently selected size */}
       <div className="flex items-center gap-2">
         <div
           className={`w-2 h-2 rounded-full ${
-            product.inStock > 0 ? "bg-green-500 animate-pulse" : "bg-red-500"
+            currentVariantStock > 0
+              ? "bg-green-500 animate-pulse"
+              : "bg-red-500"
           }`}
         />
         <span
           className={`text-sm font-medium ${
-            product.inStock > 0 ? "text-green-700" : "text-red-700"
+            currentVariantStock > 0 ? "text-green-700" : "text-red-700"
           }`}
         >
-          {product.inStock > 0 ? "In Stock" : "Out of Stock"}
+          {currentVariantStock > 0 ? "In Stock" : "Out of Stock"}
         </span>
-        {product.inStock > 0 && product.inStock < 10 && (
+        {currentVariantStock > 0 && currentVariantStock < 10 && (
           <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-full">
-            Only {product.inStock} left!
+            Only {currentVariantStock} left!
           </span>
         )}
       </div>
@@ -559,20 +566,30 @@ const ProductInfo = ({
             Select Size:
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {product.sizes.map((size) => (
-              <button
-                key={size.id}
-                onClick={() => handleSizeSelect(size)}
-                className={`px-3 py-3 rounded-lg border font-medium transition-all duration-200 ${
-                  selectedSize === size.weight
-                    ? "border-green-600 bg-green-50 text-green-700 shadow scale-105"
-                    : "border-gray-200 text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <div className="text-sm font-semibold">{size.weight}</div>
-                <div className="text-xs text-gray-600 mt-1">₹{size.price}</div>
-              </button>
-            ))}
+            {product.sizes.map((size) => {
+              // CHANGED: Check specific variant stock
+              const isOutOfStock = size.stock === 0;
+
+              return (
+                <button
+                  key={size.id}
+                  onClick={() => handleSizeSelect(size)}
+                  // CHANGED: Apply disabled styling if stock is 0, but still clickable to view price/status
+                  className={`px-3 py-3 rounded-lg border font-medium transition-all duration-200 relative ${
+                    selectedSize === size.weight
+                      ? "border-green-600 bg-green-50 text-green-700 shadow scale-105"
+                      : isOutOfStock
+                      ? "border-gray-100 bg-gray-50 text-gray-400"
+                      : "border-gray-200 text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="text-sm font-semibold">{size.weight}</div>
+                  <div className="text-xs mt-1">
+                    {isOutOfStock ? "Sold Out" : `₹${size.price}`}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -584,7 +601,8 @@ const ProductInfo = ({
           <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
             <button
               onClick={decrementQuantity}
-              className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              disabled={currentVariantStock === 0}
+              className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50"
             >
               <FiMinus className="w-4 h-4" />
             </button>
@@ -593,7 +611,8 @@ const ProductInfo = ({
             </div>
             <button
               onClick={incrementQuantity}
-              className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              disabled={currentVariantStock === 0}
+              className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50"
             >
               <FiPlus className="w-4 h-4" />
             </button>
@@ -604,21 +623,23 @@ const ProductInfo = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - CHANGED: Disabled based on specific variant stock */}
       <div className="flex flex-col gap-2 pt-2">
         <button
           onClick={handleAddToCart}
-          disabled={!product.inStock}
-          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg shadow hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+          disabled={currentVariantStock === 0}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg shadow hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:active:scale-100"
         >
           <FiShoppingCart className="w-5 h-5" />
-          <span>Add to Cart</span>
+          <span>
+            {currentVariantStock === 0 ? "Out of Stock" : "Add to Cart"}
+          </span>
         </button>
 
         <button
           onClick={handleBuyNow}
-          disabled={!product.inStock}
-          className="w-full bg-white hover:bg-gray-50 border-2 border-green-600 text-green-600 font-semibold py-3 px-4 rounded-lg shadow-sm hover:shadow transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+          disabled={currentVariantStock === 0}
+          className="w-full bg-white hover:bg-gray-50 border-2 border-green-600 text-green-600 font-semibold py-3 px-4 rounded-lg shadow-sm hover:shadow transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:active:scale-100"
         >
           <FiShoppingCart className="w-5 h-5" />
           <span>Buy Now</span>
@@ -1250,6 +1271,7 @@ const ProductDetailPage = () => {
         weight: variant.name,
         price: variant.price,
         originalPrice: variant.price * 1.2,
+        stock: variant.stock || 0, // CHANGED: Map stock from API
       })),
       description: data.description,
       detailedDescription:
@@ -1356,6 +1378,12 @@ const ProductDetailPage = () => {
       return;
     }
 
+    // CHANGED: Prevent adding if stock is 0
+    if (selectedSizeDetails.stock === 0) {
+      toast.error("This variant is out of stock.");
+      return;
+    }
+
     const item: CartItem = {
       id: product.id,
       name: product.name,
@@ -1376,6 +1404,11 @@ const ProductDetailPage = () => {
   };
 
   const handleBuyNow = () => {
+    // CHANGED: Check variant stock
+    if (selectedSizeDetails && selectedSizeDetails.stock === 0) {
+      toast.error("This variant is out of stock.");
+      return;
+    }
     handleAddToCart();
     router.push("/checkout");
   };

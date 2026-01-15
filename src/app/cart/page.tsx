@@ -215,13 +215,13 @@ const EmptyCart = ({ router }: { router: any }) => (
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
-                onClick={() => router.push("/product")}
+                onClick={() => router.push("/products")}
                 className="px-6 py-3.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors active:scale-95"
               >
                 Start Shopping
               </button>
               <button
-                onClick={() => router.push("/categories")}
+                onClick={() => router.push("/products")}
                 className="px-6 py-3.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors active:scale-95"
               >
                 Browse Categories
@@ -278,8 +278,8 @@ const CartItemComponent = ({
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
               <button
                 onClick={() => onUpdateQuantity(item.id, item.selectedSize, -1)}
-                disabled={item.quantity <= 1}
-                className="w-8 h-8 flex items-center justify-center active:bg-gray-100 transition-colors disabled:opacity-30"
+                /* DISABLED REMOVED HERE */
+                className="w-8 h-8 flex items-center justify-center active:bg-gray-100 transition-colors"
               >
                 <FiMinus className="w-3 h-3 stroke-2" />
               </button>
@@ -340,8 +340,8 @@ const CartItemComponent = ({
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
               <button
                 onClick={() => onUpdateQuantity(item.id, item.selectedSize, -1)}
-                disabled={item.quantity <= 1}
-                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30"
+                /* DISABLED REMOVED HERE */
+                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
               >
                 <FiMinus className="w-4 h-4 stroke-2" />
               </button>
@@ -917,16 +917,46 @@ const CheckoutModal = ({
 
         setTimeout(() => onClose(true), 1500);
       } else {
-        const errorMessage =
-          data.message || data.error || "Failed to place order";
+        // ========== ERROR HANDLING START ==========
+        const errorList: string[] = [];
+        // 1. Check top-level message/error
+        if (data.message) errorList.push(data.message);
+        if (data.error) errorList.push(data.error);
+
+        // 2. Check nested 'errors' object or array
+        if (data.errors) {
+          if (Array.isArray(data.errors)) {
+            data.errors.forEach((err: any) => errorList.push(String(err)));
+          } else if (typeof data.errors === "object") {
+            Object.keys(data.errors).forEach((key) => {
+              const val = data.errors[key];
+              if (Array.isArray(val)) {
+                errorList.push(`${key}: ${val.join(", ")}`);
+              } else {
+                errorList.push(`${key}: ${val}`);
+              }
+            });
+          }
+        }
+
+        // 3. Fallback
+        if (errorList.length === 0) errorList.push("Failed to place order");
+
+        // 4. Remove duplicates
+        const uniqueErrors = Array.from(new Set(errorList));
+
         toast.error(
           <div className="flex flex-col gap-2">
             <span className="font-bold text-base">Order Failed</span>
-            <p className="text-sm">{errorMessage}</p>
-            <p className="text-xs text-gray-600">Please try again</p>
+            <ul className="list-disc pl-4 text-sm space-y-1">
+              {uniqueErrors.map((err, idx) => (
+                <li key={idx}>{err}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-gray-600 mt-1">Please try again</p>
           </div>,
           {
-            duration: 4000,
+            duration: 5000,
             style: {
               background: "#fef2f2",
               color: "#991b1b",
@@ -935,6 +965,7 @@ const CheckoutModal = ({
             },
           }
         );
+        // ========== ERROR HANDLING END ==========
       }
     } catch (error) {
       toast.dismiss(loadingToast);
@@ -1450,23 +1481,32 @@ const ShoppingCartPage = () => {
   const discount = appliedCoupon?.discountAmount || 0;
   const total = subtotal - discount + shipping;
 
-  // Update quantity
+  // Update quantity (MODIFIED FOR REMOVE ON ZERO)
   const updatequantity = (id: string, selectedSize: string, change: number) => {
     const item = cartItems.find(
       (i: any) => i.id === id && i.selectedSize === selectedSize
     );
     if (item) {
-      dispatch(
-        updateQuantity({
-          id,
-          selectedSize,
-          quantity: Math.max(1, item.quantity + change),
-        })
-      );
-      toast.success("Quantity updated", {
-        icon: change > 0 ? "➕" : "➖",
-        duration: 1500,
-      });
+      const newQuantity = item.quantity + change;
+
+      // If new quantity is 0 or less, remove item
+      if (newQuantity <= 0) {
+        dispatch(removeFromCart({ id, selectedSize }));
+        // toast.success("Removed from cart", { icon: "🗑️", duration: 2000 });
+      } else {
+        // Otherwise update quantity
+        dispatch(
+          updateQuantity({
+            id,
+            selectedSize,
+            quantity: newQuantity,
+          })
+        );
+        // toast.success("Quantity updated", {
+        //   icon: change > 0 ? "➕" : "➖",
+        //   duration: 1500,
+        // });
+      }
     }
   };
 
@@ -1527,7 +1567,51 @@ const ShoppingCartPage = () => {
           },
         });
       } else {
-        toast.error(data.message || "Invalid promo code", { icon: "❌" });
+        console.log("error is coming", data);
+        // ========== ERROR HANDLING START ==========
+        const errorList: string[] = [];
+        // 1. Check top-level message/error
+        if (data.message) errorList.push(data.message);
+        if (data.error) errorList.push(data.error);
+
+        // 2. Check nested 'errors' object or array
+        if (data.errors) {
+          if (Array.isArray(data.errors)) {
+            data.errors.forEach((err: any) => errorList.push(String(err)));
+          } else if (typeof data.errors === "object") {
+            Object.keys(data.errors).forEach((key) => {
+              const val = data.errors[key];
+              if (Array.isArray(val)) {
+                errorList.push(`${key}: ${val.join(", ")}`);
+              } else {
+                errorList.push(`${key}: ${val}`);
+              }
+            });
+          }
+        }
+
+        // 3. Fallback
+        if (errorList.length === 0)
+          errorList.push("Invalid promo code or criteria not met");
+
+        // 4. Remove duplicates
+        const uniqueErrors = Array.from(new Set(errorList));
+
+        toast.error(
+          <div className="flex flex-col gap-1">
+            <span className="font-bold text-sm">Action Failed</span>
+            <ul className="list-disc pl-4 text-xs space-y-0.5">
+              {uniqueErrors.map((err, idx) => (
+                <li key={idx}>{err}</li>
+              ))}
+            </ul>
+          </div>,
+          {
+            icon: "❌",
+            duration: 4000,
+          }
+        );
+        // ========== ERROR HANDLING END ==========
       }
     } catch (error) {
       toast.dismiss(loadingToast);
