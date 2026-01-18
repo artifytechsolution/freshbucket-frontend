@@ -636,14 +636,14 @@ const ProductInfo = ({
           </span>
         </button>
 
-        <button
+        {/* <button
           onClick={handleBuyNow}
           disabled={currentVariantStock === 0}
           className="w-full bg-white hover:bg-gray-50 border-2 border-green-600 text-green-600 font-semibold py-3 px-4 rounded-lg shadow-sm hover:shadow transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:active:scale-100"
         >
           <FiShoppingCart className="w-5 h-5" />
           <span>Buy Now</span>
-        </button>
+        </button> */}
       </div>
 
       {/* Product Details Grid */}
@@ -1259,7 +1259,7 @@ const ProductDetailPage = () => {
       weight: data.variants[0]?.name || "1kg",
       origin: "fresh Farms, India",
       shelfLife: `${data.expiryDays} days`,
-      certifications: ["India fresh", "FSSAI Approved"],
+      certifications: ["India fresh"],
       images:
         data.images && data.images.length > 0
           ? data.images
@@ -1274,15 +1274,13 @@ const ProductDetailPage = () => {
         stock: variant.stock || 0, // CHANGED: Map stock from API
       })),
       description: data.description,
-      detailedDescription:
-        "These fresh products are grown with care in sustainable farms, free from synthetic pesticides and fertilizers. Hand-picked at peak ripeness, they offer a perfect balance of freshness and quality, ideal for every occasion.",
+      detailedDescription: data.description,
       features: [
         "✓ 100% Certified fresh",
         "✓ Hand-picked at peak ripeness",
         "✓ Rich in flavor and nutrients",
         "✓ Perfect for healthy eating",
         "✓ Fresh daily delivery",
-        "✓ FSSAI Approved",
       ],
       nutrition: {
         calories: 60,
@@ -1574,11 +1572,11 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Product Tabs */}
-          <ProductTabs
+          {/* <ProductTabs
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             product={product}
-          />
+          /> */}
 
           {/* Related Products */}
           <RelatedProducts
