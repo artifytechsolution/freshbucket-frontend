@@ -390,7 +390,7 @@ const ProductImages = ({
 
             {/* Action Buttons */}
             <div className="absolute top-3 right-3 flex flex-col gap-2">
-              <button
+              {/* <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleWishlist();
@@ -404,7 +404,7 @@ const ProductImages = ({
                       : "text-gray-500 hover:text-red-500"
                   }`}
                 />
-              </button>
+              </button> */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
