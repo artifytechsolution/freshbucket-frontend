@@ -264,49 +264,7 @@ const Footer = () => {
                   Vegetables
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/products?category=dairy"
-                  className="text-[#DCE5D6] hover:text-[#6AA84F] transition-colors duration-200 flex items-center group"
-                >
-                  <svg
-                    className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  Dairy & Eggs
-                </Link>
-              </li>
 
-              <li>
-                <Link
-                  href="/products?category=bakery"
-                  className="text-[#DCE5D6] hover:text-[#6AA84F] transition-colors duration-200 flex items-center group"
-                >
-                  <svg
-                    className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  Bakery Items
-                </Link>
-              </li>
               <li>
                 <Link
                   href="/products?category=fresh"
@@ -462,7 +420,7 @@ const Footer = () => {
             </div>
 
             {/* Payment Methods */}
-            <div className="flex items-center space-x-4">
+            {/* <div className="flex items-center space-x-4">
               <span className="text-[#DCE5D6] text-sm font-medium">
                 Secure Payments:
               </span>
@@ -483,7 +441,7 @@ const Footer = () => {
                   <span className="text-xs font-bold text-gray-800">COD</span>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Additional Info */}

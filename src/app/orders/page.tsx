@@ -18,7 +18,6 @@ const OrdersPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalOrders, setTotalOrders] = useState(0);
   const user = useAppSelector(selectUser);
-  console.log("User in OrdersPage:", user?.user?.id);
 
   // Ref for intersection observer
   const observerRef = useRef(null);
@@ -29,7 +28,7 @@ const OrdersPage = () => {
   // Get user ID from localStorage or context
   const getUserId = () => {
     if (typeof window !== "undefined") {
-      const userId = user.user.id;
+      const userId = user?.user?.id;
       return userId;
     }
     return null;
@@ -45,9 +44,9 @@ const OrdersPage = () => {
         setError(null);
 
         const userId = getUserId();
-        console.log("Fetching orders for userId:", userId);
         if (!userId) {
-          toast.error("User not authenticated");
+          // toast.error("User not authenticated");
+          // handled silently to prevent loops if user is loading
         }
 
         const response = await fetch(
@@ -56,21 +55,19 @@ const OrdersPage = () => {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              // Add authorization token if needed
-              // 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
           }
         );
 
         if (!response.ok) {
-          toast.error(`Failed to fetch orders: ${response.statusText}`);
+          // toast.error(`Failed to fetch orders`);
         }
 
         const result = await response.json();
 
         if (result.status === "success" && result.data) {
           const newOrders = result.data.data || [];
-          const pagination = result.data.pagination;
+          const pagination = result.data.meta || {}; // Updated to 'meta' based on your JSON
 
           // Append new orders to existing ones
           setOrders((prevOrders) => {
@@ -82,10 +79,8 @@ const OrdersPage = () => {
             return [...prevOrders, ...uniqueNewOrders];
           });
 
-          setTotalOrders(pagination.total);
-          setHasMore(pagination.hasNext);
-        } else {
-          toast.error("Invalid response format");
+          setTotalOrders(pagination.total || 0);
+          setHasMore(pageNum < (pagination.totalPages || 1));
         }
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -179,7 +174,7 @@ const OrdersPage = () => {
         label: "Cancelled",
       },
     };
-    return badges[status];
+    return badges[status] || badges.processing;
   };
 
   // Format date
@@ -204,38 +199,19 @@ const OrdersPage = () => {
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-12 text-center">
-            {/* <div className="text-red-400 mb-4">
-              <svg
-                className="w-24 h-24 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1"
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div> */}
-
-            {/* ✅ UPDATED TEXT */}
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               Order Not Found
             </h3>
             <p className="text-base text-gray-600 mb-6">
               We couldn’t find any orders for your account.
             </p>
-
-            {/* Optional: Keep retry button */}
             <button
               onClick={() => {
-                window.location.href = "/home";
+                window.location.href = "/";
               }}
               className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
             >
-              goto home
+              Go to Home
             </button>
           </div>
         </div>
@@ -250,12 +226,10 @@ const OrdersPage = () => {
         .order-card {
           transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-
         .order-card:hover {
           transform: translateY(-4px);
           box-shadow: 0 20px 40px -12px rgba(22, 163, 74, 0.15);
         }
-
         @keyframes slideIn {
           from {
             opacity: 0;
@@ -266,11 +240,9 @@ const OrdersPage = () => {
             transform: translateY(0);
           }
         }
-
         .animate-slide-in {
           animation: slideIn 0.4s ease-out forwards;
         }
-
         @keyframes pulse {
           0%,
           100% {
@@ -280,11 +252,9 @@ const OrdersPage = () => {
             opacity: 0.5;
           }
         }
-
         .animate-pulse {
           animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-
         @media (max-width: 640px) {
           .order-card:hover {
             transform: translateY(-2px);
@@ -295,17 +265,13 @@ const OrdersPage = () => {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
             My Orders
           </h1>
-          <p className="text-gray-600">
-            Showing {orders.length} of {totalOrders} orders
-          </p>
+          <p className="text-gray-600">Showing {orders.length} orders</p>
         </div>
 
-        {/* Orders List */}
         {orders.length === 0 && !loading ? (
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center">
             <div className="text-gray-400 mb-4">
@@ -364,51 +330,12 @@ const OrdersPage = () => {
                           </div>
                           <div className="flex flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm text-gray-600">
                             <span className="flex items-center space-x-1">
-                              <svg
-                                className="w-3 h-3 sm:w-4 sm:h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                              </svg>
                               <span>{formatDate(order.placedAt)}</span>
                             </span>
                             <span className="flex items-center space-x-1">
-                              <svg
-                                className="w-3 h-3 sm:w-4 sm:h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                                />
-                              </svg>
                               <span>{order.items?.length || 0} items</span>
                             </span>
                             <span className="flex items-center space-x-1">
-                              <svg
-                                className="w-3 h-3 sm:w-4 sm:h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                                />
-                              </svg>
                               <span>{order.paymentMethod}</span>
                             </span>
                           </div>
@@ -472,37 +399,56 @@ const OrdersPage = () => {
                             <span>Order Items</span>
                           </h4>
                           <div className="space-y-2 sm:space-y-3">
-                            {order.items?.map((item) => (
-                              <div
-                                key={item.id}
-                                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl"
-                              >
-                                <img
-                                  src={
-                                    item.product?.image ||
-                                    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"
-                                  }
-                                  alt={item.product?.name || "Product"}
-                                  className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg object-cover flex-shrink-0"
-                                  onError={(e) => {
-                                    e.target.src =
-                                      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200";
-                                  }}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <h5 className="font-bold text-gray-900 text-sm sm:text-base truncate">
-                                    {item.product?.name || "Product"}
-                                  </h5>
-                                  <p className="text-xs sm:text-sm text-gray-600">
-                                    Qty: {item.quantity} × ₹
-                                    {parseFloat(item.price).toFixed(2)}
+                            {order.items?.map((item) => {
+                              // --- CHANGE START: Correct Data Extraction based on JSON ---
+                              const variant = item.variant;
+                              const product = variant?.product || item.product;
+                              const unitLabel = variant?.unit?.short; // e.g., "gm", "kg"
+                              const variantName = variant?.name;
+                              // --- CHANGE END ---
+
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl"
+                                >
+                                  <img
+                                    src={
+                                      product?.image ||
+                                      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"
+                                    }
+                                    alt={product?.name || "Product"}
+                                    className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg object-cover flex-shrink-0"
+                                    onError={(e) => {
+                                      e.target.src =
+                                        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200";
+                                    }}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <h5 className="font-bold text-gray-900 text-sm sm:text-base truncate">
+                                      {product?.name || "Product"}
+                                    </h5>
+
+                                    {/* --- CHANGE START: Display Variant + Unit --- */}
+                                    {(variantName || unitLabel) && (
+                                      <p className="text-xs text-gray-500 mt-0.5">
+                                        {variantName}{" "}
+                                        {unitLabel ? `- ${unitLabel}` : ""}
+                                      </p>
+                                    )}
+                                    {/* --- CHANGE END --- */}
+
+                                    <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                                      Qty: {item.quantity} × ₹
+                                      {parseFloat(item.price).toFixed(2)}
+                                    </p>
+                                  </div>
+                                  <p className="font-bold text-green-600 text-sm sm:text-base whitespace-nowrap">
+                                    ₹{parseFloat(item.total).toFixed(2)}
                                   </p>
                                 </div>
-                                <p className="font-bold text-green-600 text-sm sm:text-base whitespace-nowrap">
-                                  ₹{parseFloat(item.total).toFixed(2)}
-                                </p>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
 
@@ -520,12 +466,6 @@ const OrdersPage = () => {
                             </span>
                             <span className="font-semibold text-gray-900">
                               ₹{parseFloat(order.shippingCost).toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm sm:text-base">
-                            <span className="text-gray-700">Tax</span>
-                            <span className="font-semibold text-gray-900">
-                              ₹{parseFloat(order.tax).toFixed(2)}
                             </span>
                           </div>
                           {order.discount > 0 && (
@@ -564,7 +504,6 @@ const OrdersPage = () => {
               })}
             </div>
 
-            {/* Loading Indicator (Intersection Observer Target) */}
             <div
               ref={loaderRef}
               className="flex justify-center items-center py-8"
@@ -595,7 +534,6 @@ const OrdersPage = () => {
         )}
       </div>
 
-      {/* Floating Scroll to Top Button */}
       {orders.length > 5 && (
         <button
           onClick={scrollToTop}

@@ -127,25 +127,20 @@ const ContactPage = () => {
     {
       question: "What's your return policy?",
       answer:
-        "We offer a 100% satisfaction guarantee. If you're not happy with any product, contact us within 48 hours of delivery for a full refund or replacement. Fresh produce quality is our top priority.",
+        "We offer a 100% satisfaction guarantee. If you're not happy with any product, contact us within 30 minites of delivery for a full refund or replacement. Fresh produce quality is our top priority.",
       icon: <FaShieldAlt className="w-4 h-4 sm:w-5 sm:h-5" />,
     },
     {
       question: "Is there a minimum order amount?",
       answer:
-        "No minimum order required! However, orders over ₹500 qualify for free delivery. Orders under ₹500 have a ₹49 delivery fee.",
+        "es, Minimum order required 149 Rs. for free home fresh delivery. order under 149 Rs. delivery charge will apply",
       icon: <FaShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />,
     },
-    {
-      question: "Can I track my delivery?",
-      answer:
-        "Absolutely! Once your order is confirmed, you'll receive real-time tracking updates via SMS and email. You can also track your delivery live through our app or website.",
-      icon: <FaMapMarkedAlt className="w-4 h-4 sm:w-5 sm:h-5" />,
-    },
+
     {
       question: "Do you offer bulk or wholesale orders?",
       answer:
-        "Yes, we offer special pricing for bulk orders and work with restaurants, cafes, and other businesses. Contact our wholesale team at wholesale@freshbucket.com for custom pricing.",
+        " we offer special wholesale price for bulk orders and work with restaurants, cafes, and other businesses. Contact our wholesale team at 7801858016 Call or message.",
       icon: <FaBuilding className="w-4 h-4 sm:w-5 sm:h-5" />,
     },
   ];
@@ -691,13 +686,13 @@ const ContactPage = () => {
 
               {/* Sidebar - Office Info */}
               <div className="lg:col-span-1 space-y-4 sm:space-y-6">
-                {/* Office Info Card */}
+                {/* Store Info Card */}
                 <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-5 sm:p-6 md:p-8">
                   <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-                    Visit Our Office
+                    Visit Our Store
                   </h3>
 
-                  {/* Head Office */}
+                  {/* Store Location */}
                   <div className="mb-4 sm:mb-6">
                     <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-md sm:shadow-lg">
@@ -705,65 +700,37 @@ const ContactPage = () => {
                       </div>
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-1">
-                          Head Office
+                          Store Location
                         </h4>
                         <p className="text-xs sm:text-sm text-gray-600">
-                          Main Operations
+                          Main Retail Store
                         </p>
                       </div>
                     </div>
+
                     <div className="space-y-2 sm:space-y-3 ml-12 sm:ml-16">
                       <div className="flex items-start space-x-2">
                         <FaMapMarkerAlt className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 sm:mt-1 flex-shrink-0" />
                         <p className="text-xs sm:text-sm text-gray-700">
-                          123 Fresh Street, Ring Road,
+                          Shop-8, Serenity Space,
                           <br />
-                          ahmadabad - 360001, Gujarat
+                          Opp. Vishwash City-9, Jagatpur,
+                          <br />
+                          Ahmedabad - 382481
                         </p>
                       </div>
+
                       <div className="flex items-center space-x-2">
                         <FaClock className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                         <p className="text-xs sm:text-sm text-gray-700">
-                          Mon-Sat: 9AM-8PM
+                          Mon-Sat: 9AM–8PM
                         </p>
                       </div>
+
                       <div className="flex items-center space-x-2">
                         <FaPhone className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                         <p className="text-xs sm:text-sm text-gray-700">
                           +91 98765 43210
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Warehouse */}
-                  <div className="pt-4 sm:pt-6 border-t border-gray-200">
-                    <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-md sm:shadow-lg">
-                        <FaWarehouse className="w-4 h-4 sm:w-6 sm:h-6" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-1">
-                          Warehouse
-                        </h4>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          Distribution Center
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-2 sm:space-y-3 ml-12 sm:ml-16">
-                      <div className="flex items-start space-x-2">
-                        <FaMapMarkerAlt className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 mt-0.5 sm:mt-1 flex-shrink-0" />
-                        <p className="text-xs sm:text-sm text-gray-700">
-                          GIDC, Metoda,
-                          <br />
-                          ahmadabad - 360021
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <FaClock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
-                        <p className="text-xs sm:text-sm text-gray-700">
-                          24/7 Operations
                         </p>
                       </div>
                     </div>
@@ -777,7 +744,7 @@ const ContactPage = () => {
                     Interactive Map
                   </p>
                   <p className="text-xs sm:text-sm text-gray-500 text-center">
-                    Google Maps integration would appear here
+                    Google Maps integration will appear here
                   </p>
                   <button className="mt-3 sm:mt-4 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-green-700 transition-colors">
                     Get Directions

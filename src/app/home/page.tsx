@@ -3130,7 +3130,7 @@ const FreshMartApp = () => {
                     fresh & seasonal fruits
                   </p>
                   <div className="text-xs text-[#6AA84F] font-medium">
-                    500+ products
+                    50+ products
                   </div>
                 </div>
               </Link>
@@ -3148,47 +3148,10 @@ const FreshMartApp = () => {
                     Fresh garden vegetables
                   </p>
                   <div className="text-xs text-[#6AA84F] font-medium">
-                    400+ products
+                    40+ products
                   </div>
                 </div>
               </Link>
-              <Link href="/product">
-                {/* Herbs & Spices */}
-                <div className="group bg-gradient-to-br from-[#FFF7E5] to-[#FFE8C2] rounded-2xl p-4 lg:p-6 text-center hover:from-[#FFE8C2] hover:to-[#FFDCA4] transition-all duration-300 cursor-pointer transform hover:-translate-y-2 hover:shadow-xl category-hover">
-                  <div className="text-3xl lg:text-4xl mb-3 lg:mb-4 group-hover:animate-bounce">
-                    🌿
-                  </div>
-                  <h3 className="font-bold text-[#2F3E2C] mb-1 lg:mb-2 text-sm lg:text-base">
-                    Herbs & Spices
-                  </h3>
-                  <p className="text-xs lg:text-sm text-[#4A5A42] mb-2 lg:mb-3">
-                    Fresh herbs & farm-grown spices
-                  </p>
-                  <div className="text-xs text-[#6AA84F] font-medium">
-                    200+ products
-                  </div>
-                </div>
-              </Link>
-
-              {/* Dairy */}
-              <Link href="/product">
-                <div className="group bg-gradient-to-br from-[#E8F4F8] to-[#D4E9F2] rounded-2xl p-4 lg:p-6 text-center hover:from-[#D4E9F2] hover:to-[#C0DEEC] transition-all duration-300 cursor-pointer transform hover:-translate-y-2 hover:shadow-xl category-hover">
-                  <div className="text-3xl lg:text-4xl mb-3 lg:mb-4 group-hover:animate-bounce">
-                    🥛
-                  </div>
-                  <h3 className="font-bold text-[#2F3E2C] mb-1 lg:mb-2 text-sm lg:text-base">
-                    Dairy Products
-                  </h3>
-                  <p className="text-xs lg:text-sm text-[#4A5A42] mb-2 lg:mb-3">
-                    Farm fresh milk, cheese & more
-                  </p>
-                  <div className="text-xs text-[#6AA84F] font-medium">
-                    150+ products
-                  </div>
-                </div>
-              </Link>
-
-              {/* Eggs */}
             </div>
           </div>
         </section>
