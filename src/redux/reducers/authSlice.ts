@@ -63,7 +63,7 @@ export const authSlice = createSlice({
     removeUser(state) {
       state.userData = null;
     },
-    setAuthToken(state, action: PayloadAction<string | null>) {
+    setAuthToken(state, action: PayloadAction<string>) {
       state.authToken = action.payload;
     },
     removeAuthToken(state) {
@@ -77,7 +77,6 @@ export const { setUser, removeUser, setAuthToken, removeAuthToken } =
 
 export const selectAuthToken = (state: RootState) =>
   state?.app?.user?.authToken ?? null;
-
 export const selectUser = (state: RootState) =>
   state?.app?.user?.userData ?? null;
 
@@ -104,7 +103,7 @@ export const cartSlice = createSlice({
   name: "cart",
   initialState: initialCartState,
   reducers: {
-    addToCart: (state, action: PayloadAction<CartItem>) => {
+    addToCart: (state, action: PayloadAction<any>) => {
       // Validate payload
       if (
         !action.payload ||
@@ -151,7 +150,6 @@ export const cartSlice = createSlice({
         0
       );
     },
-
     removeFromCart: (
       state,
       action: PayloadAction<{ id: string; selectedSize: string }>
@@ -162,12 +160,14 @@ export const cartSlice = createSlice({
           item.id === action.payload.id &&
           item.selectedSize === action.payload.selectedSize
       );
+
       if (!itemExists) {
         console.warn(
           `No item found to remove for id: ${action.payload.id} and selectedSize: ${action.payload.selectedSize}`
         );
         return;
       }
+
       state.items = state.items.filter(
         (item) =>
           !(
@@ -175,6 +175,7 @@ export const cartSlice = createSlice({
             item.selectedSize === action.payload.selectedSize
           )
       );
+
       state.total = state.items.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
@@ -207,6 +208,11 @@ export const selectCartTotal = (state: RootState) =>
     (total, item) => total + item.price * item.quantity,
     0
   ) ?? 0;
+
+// -------------------- CART COUNT SELECTOR --------------------
+export const selectCartCount = (state: RootState) =>
+  state?.app?.cart?.items?.reduce((count, item) => count + item.quantity, 0) ??
+  0;
 
 // -------------------- EXPORT REDUCERS --------------------
 export const authReducer = authSlice.reducer;

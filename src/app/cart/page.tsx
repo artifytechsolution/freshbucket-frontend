@@ -2083,9 +2083,7 @@ const CheckoutModal = ({
                       <p className="font-bold text-gray-900 text-sm">
                         Expected Delivery
                       </p>
-                      <p className="text-sm text-gray-600">
-                        Within 2-3 business days
-                      </p>
+                      <p className="text-sm text-gray-600">within 60 minutes</p>
                     </div>
                   </div>
                 </div>

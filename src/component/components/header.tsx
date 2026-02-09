@@ -1338,6 +1338,8 @@ import { BASE_URL } from "@src/config/config";
 import { useRouter } from "next/navigation";
 import useAuth from "@src/hooks/useAuth";
 import { ShoppingCartIcon } from "lucide-react";
+import { useSelector } from "react-redux";
+import { selectCartCount } from "@src/redux/reducers/authSlice";
 
 // Custom debounce hook with proper cleanup
 const useDebounce = (value, delay) => {
@@ -1394,6 +1396,9 @@ const Header = () => {
   // Auth state - only isLoggedIn parameter
   const { isLoggedIn } = useAuth();
   console.log("User is logged in:", isLoggedIn);
+
+  // Get cart count from Redux - MUST BE AT TOP LEVEL
+  const cartCount = useSelector(selectCartCount);
 
   // UI State management
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -1949,6 +1954,11 @@ const Header = () => {
                 <Link href="/cart">
                   <button className="relative p-2 lg:p-3 rounded-xl hover:bg-[#E4EDDF] text-[#4A5A42] hover:text-[#6AA84F] transition-all duration-200 group">
                     <ShoppingCartIcon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-[#E84C3D] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
                   </button>
                 </Link>
               </div>
