@@ -647,7 +647,7 @@ const ProductInfo = ({
       </div>
 
       {/* Product Details Grid */}
-      <div className="pt-3 border-t border-gray-200">
+      {/* <div className="pt-3 border-t border-gray-200">
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
             <FiPackage className="w-4 h-4 text-gray-400" />
@@ -678,7 +678,7 @@ const ProductInfo = ({
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Certifications */}
       {product.certifications.length > 0 && (
@@ -1323,51 +1323,51 @@ const ProductDetailPage = () => {
     : null;
 
   // Fallback related products
-  const fallbackRelatedProducts: RelatedProduct[] = [
-    {
-      id: "2",
-      name: "fresh Fresh Produce",
-      price: 350,
-      originalPrice: 420,
-      discount: 17,
-      weight: "1kg",
-      image: DEFAULT_PRODUCT_IMAGE,
-      rating: 4.5,
-    },
-    {
-      id: "3",
-      name: "Fresh fresh Items",
-      price: 300,
-      originalPrice: 360,
-      discount: 17,
-      weight: "1kg",
-      image: DEFAULT_PRODUCT_IMAGE,
-      rating: 4.7,
-    },
-    {
-      id: "4",
-      name: "Premium fresh Products",
-      price: 280,
-      originalPrice: 336,
-      discount: 17,
-      weight: "1kg",
-      image: DEFAULT_PRODUCT_IMAGE,
-      rating: 4.3,
-    },
-    {
-      id: "5",
-      name: "fresh Greens Bundle",
-      price: 420,
-      originalPrice: 500,
-      discount: 16,
-      weight: "1.5kg",
-      image: DEFAULT_PRODUCT_IMAGE,
-      rating: 4.9,
-    },
-  ];
+  // const fallbackRelatedProducts: RelatedProduct[] = [
+  //   {
+  //     id: "2",
+  //     name: "fresh Fresh Produce",
+  //     price: 350,
+  //     originalPrice: 420,
+  //     discount: 17,
+  //     weight: "1kg",
+  //     image: DEFAULT_PRODUCT_IMAGE,
+  //     rating: 4.5,
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Fresh fresh Items",
+  //     price: 300,
+  //     originalPrice: 360,
+  //     discount: 17,
+  //     weight: "1kg",
+  //     image: DEFAULT_PRODUCT_IMAGE,
+  //     rating: 4.7,
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "Premium fresh Products",
+  //     price: 280,
+  //     originalPrice: 336,
+  //     discount: 17,
+  //     weight: "1kg",
+  //     image: DEFAULT_PRODUCT_IMAGE,
+  //     rating: 4.3,
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "fresh Greens Bundle",
+  //     price: 420,
+  //     originalPrice: 500,
+  //     discount: 16,
+  //     weight: "1.5kg",
+  //     image: DEFAULT_PRODUCT_IMAGE,
+  //     rating: 4.9,
+  //   },
+  // ];
 
   const displayRelatedProducts =
-    relatedProducts.length > 0 ? relatedProducts : fallbackRelatedProducts;
+    relatedProducts.length > 0 ? relatedProducts : [];
 
   // ==================== EVENT HANDLERS ====================
   const handleAddToCart = () => {
