@@ -19,6 +19,9 @@ import {
   FiShoppingCart,
   FiAlertCircle,
 } from "react-icons/fi";
+import {
+  FiEdit2, // ADD THIS
+} from "react-icons/fi";
 import { IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -1430,7 +1433,219 @@ const SocietySelector = ({
   );
 };
 
-// 9. CheckoutModal Component
+// 9. CheckoutModal Component (UPDATED)
+// Add this new component for displaying saved address
+const SavedAddressDisplay = ({
+  address,
+  society,
+  onEdit,
+  onUseNewAddress,
+}: {
+  address: any;
+  society: Society | null;
+  onEdit: () => void;
+  onUseNewAddress: () => void;
+}) => (
+  <div className="space-y-4">
+    {/* Selected Address Card */}
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-300">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <FiMapPin className="text-white w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-base">
+              Last Used Address
+            </h3>
+            <p className="text-xs text-gray-600 mt-0.5">
+              Your previous delivery address
+            </p>
+          </div>
+        </div>
+        <IoCheckmarkCircle className="text-green-600 w-6 h-6 flex-shrink-0" />
+      </div>
+
+      <div className="bg-white rounded-lg p-4 border border-green-200">
+        <div className="flex items-start gap-3 mb-3">
+          <FiHome className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="font-bold text-gray-900 capitalize text-sm mb-1">
+              {address.addressType || "Home"} Address
+            </p>
+            <div className="space-y-1 text-sm text-gray-600">
+              <p className="font-semibold text-gray-900">{address.fullName}</p>
+              <p>{address.phone}</p>
+              {address.email && <p className="text-xs">{address.email}</p>}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 pt-3 space-y-2 text-sm text-gray-600">
+          <p>
+            {address.addressLine1}
+            {address.addressLine2 && `, ${address.addressLine2}`}
+          </p>
+          <p className="font-semibold text-green-700">
+            {society?.name || address.societyName},{" "}
+            {society?.area || address.societyArea}
+          </p>
+          <p>
+            {address.city}, {address.state} - {address.pincode}
+          </p>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-2 mt-4">
+        <button
+          onClick={onEdit}
+          className="flex-1 py-2.5 px-4 bg-white border-2 border-green-600 text-green-700 rounded-lg font-semibold hover:bg-green-50 transition-all active:scale-95"
+        >
+          <FiMapPin className="inline mr-2 w-4 h-4" />
+          Edit Address
+        </button>
+        <button
+          onClick={onUseNewAddress}
+          className="flex-1 py-2.5 px-4 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all active:scale-95"
+        >
+          <FiPlus className="inline mr-2 w-4 h-4" />
+          Use New Address
+        </button>
+      </div>
+    </div>
+
+    {/* Quick Info */}
+    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+      <div className="flex items-center gap-3">
+        <FiTruck className="text-green-600 w-4 h-4 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-gray-900">
+            Ready for Delivery
+          </p>
+          <p className="text-xs text-gray-600 mt-0.5">
+            Your order will be delivered to this address within 60 minutes
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const fetchLastOrder = async (userId: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/api/orders?page=1&limit=1`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = await response.json();
+
+    if (
+      result.status === "success" &&
+      result.data?.data &&
+      result.data.data.length > 0
+    ) {
+      return {
+        success: true,
+        order: result.data.data[0],
+      };
+    }
+
+    return {
+      success: false,
+      order: null,
+    };
+  } catch (error) {
+    console.error("Fetch last order error:", error);
+    return {
+      success: false,
+      order: null,
+      error: error,
+    };
+  }
+};
+
+// Helper function to find society from address
+const findSocietyFromAddress = (address: any): Society | null => {
+  if (!address?.societyName) return null;
+
+  const society = STATIC_SOCIETIES.find(
+    (s) =>
+      s.name.toLowerCase() === address.societyName.toLowerCase() &&
+      s.area.toLowerCase() === address.societyArea.toLowerCase() &&
+      s.pincode === address.societyPincode
+  );
+
+  return society || null;
+};
+
+// Component to display saved address
+const SavedAddressCard = ({
+  address,
+  society,
+  onEdit,
+}: {
+  address: any;
+  society: Society | null;
+  onEdit: () => void;
+}) => (
+  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 lg:p-5 border-2 border-green-300">
+    <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <FiMapPin className="text-white w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="font-bold text-gray-900 text-sm lg:text-base">
+            Default Delivery Address
+          </h3>
+          <p className="text-xs text-gray-600 mt-0.5">From your last order</p>
+        </div>
+      </div>
+      <IoCheckmarkCircle className="text-green-600 w-6 h-6 flex-shrink-0" />
+    </div>
+
+    <div className="bg-white rounded-lg p-3 lg:p-4 border border-green-200">
+      <div className="flex items-start gap-3 mb-3">
+        <FiHome className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="font-bold text-gray-900 capitalize text-sm mb-1">
+            {address.addressType || "Home"} Address
+          </p>
+          <div className="space-y-1 text-xs lg:text-sm text-gray-600">
+            <p className="font-semibold text-gray-900">{address.fullName}</p>
+            <p>{address.phone}</p>
+            {address.email && <p className="text-xs">{address.email}</p>}
+          </div>
+        </div>
+        <button
+          onClick={onEdit}
+          className="p-2 hover:bg-green-100 rounded-lg transition-colors active:scale-95"
+          title="Edit address"
+        >
+          <FiEdit2 className="w-4 h-4 text-green-600" />
+        </button>
+      </div>
+
+      <div className="border-t border-gray-200 pt-3 space-y-1 lg:space-y-2 text-xs lg:text-sm text-gray-600">
+        <p>
+          {address.addressLine1}
+          {address.addressLine2 && `, ${address.addressLine2}`}
+        </p>
+        <p className="font-semibold text-green-700">
+          {address.societyName}, {address.societyArea}
+        </p>
+        <p>
+          {address.city}, {address.state} - {address.pincode}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+// 9. CheckoutModal Component (UPDATED WITH ADDRESS DISPLAY MODE)
 const CheckoutModal = ({
   isOpen,
   onClose,
@@ -1458,9 +1673,87 @@ const CheckoutModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
   const [errors, setErrors] = useState<any>({});
+
+  // Address management states
+  const [defaultAddress, setDefaultAddress] = useState<any>(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [hasLoadedAddress, setHasLoadedAddress] = useState(false);
+
   const router = useRouter();
   const user = useAppSelector(selectUser);
+
+  // Load last order address when modal opens
+  useEffect(() => {
+    const loadDefaultAddress = async () => {
+      if (!isOpen || hasLoadedAddress || !user?.user?.user_id) return;
+
+      setIsLoadingAddress(true);
+
+      try {
+        const result = await fetchLastOrder(user.user.user_id);
+
+        if (result.success && result.order?.Address) {
+          const address = result.order.Address;
+
+          // Find matching society
+          const matchedSociety = findSocietyFromAddress(address);
+
+          // Set default address
+          setDefaultAddress(address);
+
+          // Also set form data in background (for editing)
+          setFormData({
+            fullName: address.fullName || "",
+            phone: address.phone || "",
+            email: address.email || "",
+            addressLine1: address.addressLine1 || "",
+            addressLine2: address.addressLine2 || "",
+            city: address.city || "Ahmedabad",
+            state: address.state || "Gujarat",
+            pincode: address.pincode || "",
+            addressType: address.addressType || "home",
+          });
+
+          if (matchedSociety) {
+            setSelectedSociety(matchedSociety);
+          }
+
+          // Show saved address, not form
+          setShowAddressForm(false);
+
+          // toast.success("Default address loaded", {
+          //   icon: "📍",
+          //   duration: 2000,
+          // });
+        } else {
+          // No previous order - show form directly
+          setShowAddressForm(true);
+        }
+
+        setHasLoadedAddress(true);
+      } catch (error) {
+        console.error("Error loading address:", error);
+        setShowAddressForm(true);
+        setHasLoadedAddress(true);
+      } finally {
+        setIsLoadingAddress(false);
+      }
+    };
+
+    loadDefaultAddress();
+  }, [isOpen, hasLoadedAddress, user]);
+
+  // Reset modal state when closed
+  useEffect(() => {
+    if (!isOpen) {
+      setStep(1);
+      setHasLoadedAddress(false);
+      setShowAddressForm(false);
+      setDefaultAddress(null);
+    }
+  }, [isOpen]);
 
   const validateForm = () => {
     const newErrors: any = {};
@@ -1485,7 +1778,63 @@ const CheckoutModal = ({
     }
   };
 
+  const handleEditAddress = () => {
+    setShowAddressForm(true);
+    // toast.info("Edit your address", { icon: "✏️", duration: 2000 });
+  };
+
+  const handleAddNewAddress = () => {
+    // Clear form
+    setFormData({
+      fullName: "",
+      phone: "",
+      email: "",
+      addressLine1: "",
+      addressLine2: "",
+      city: "Ahmedabad",
+      state: "Gujarat",
+      pincode: "",
+      addressType: "home",
+    });
+    setSelectedSociety(null);
+    setShowAddressForm(true);
+    // toast.info("Add new delivery address", { icon: "➕", duration: 2000 });
+  };
+
+  const handleCancelAddressEdit = () => {
+    if (defaultAddress) {
+      // Restore default address data
+      setFormData({
+        fullName: defaultAddress.fullName || "",
+        phone: defaultAddress.phone || "",
+        email: defaultAddress.email || "",
+        addressLine1: defaultAddress.addressLine1 || "",
+        addressLine2: defaultAddress.addressLine2 || "",
+        city: defaultAddress.city || "Ahmedabad",
+        state: defaultAddress.state || "Gujarat",
+        pincode: defaultAddress.pincode || "",
+        addressType: defaultAddress.addressType || "home",
+      });
+
+      const matchedSociety = findSocietyFromAddress(defaultAddress);
+      if (matchedSociety) {
+        setSelectedSociety(matchedSociety);
+      }
+
+      setShowAddressForm(false);
+      toast.success("Using default address", { icon: "📍", duration: 2000 });
+    }
+  };
+
   const handleNext = () => {
+    // If using default address (not showing form)
+    if (defaultAddress && !showAddressForm) {
+      setStep(2);
+      toast.success("Proceed to review your order", { icon: "✅" });
+      return;
+    }
+
+    // If showing form, validate it
     if (step === 1 && validateForm()) {
       setStep(2);
       toast.success("Proceed to review your order", { icon: "✅" });
@@ -1498,21 +1847,25 @@ const CheckoutModal = ({
     setIsLoading(true);
     const loadingToast = toast.loading("Placing your order...");
 
-    const shippingAddress = {
-      fullName: formData.fullName,
-      phone: formData.phone,
-      email: formData.email || "",
-      addressLine1: formData.addressLine1,
-      addressLine2: formData.addressLine2 || "",
-      city: formData.city,
-      state: formData.state,
-      pincode: formData.pincode,
-      addressType: formData.addressType,
-      societyName: selectedSociety?.name || "",
-      societyArea: selectedSociety?.area || "",
-      societyPincode: selectedSociety?.pincode || "",
-      isDeliveryAvailable: selectedSociety?.deliveryAvailable || false,
-    };
+    // Determine which address to use
+    const addressToUse =
+      defaultAddress && !showAddressForm
+        ? defaultAddress
+        : {
+            fullName: formData.fullName,
+            phone: formData.phone,
+            email: formData.email || "",
+            addressLine1: formData.addressLine1,
+            addressLine2: formData.addressLine2 || "",
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+            addressType: formData.addressType,
+            societyName: selectedSociety?.name || "",
+            societyArea: selectedSociety?.area || "",
+            societyPincode: selectedSociety?.pincode || "",
+            isDeliveryAvailable: selectedSociety?.deliveryAvailable || false,
+          };
 
     const orderPayload = {
       user_id: user?.user?.user_id,
@@ -1528,7 +1881,7 @@ const CheckoutModal = ({
         price: parseFloat(item.price.toString()),
         total: parseFloat((item.price * item.quantity).toFixed(2)),
       })),
-      Address: shippingAddress,
+      Address: addressToUse,
       status: "CONFIRMED",
       paymentStatus: "PAID",
       paymentMethod: "COD",
@@ -1555,25 +1908,6 @@ const CheckoutModal = ({
                 Order Placed Successfully!
               </span>
             </div>
-            <div className="text-sm space-y-1 pl-8">
-              <p>
-                <span className="font-semibold">Order ID:</span> {orderId}
-              </p>
-              <p>
-                <span className="font-semibold">Amount:</span> ₹
-                {cartData.total.toFixed(2)}
-              </p>
-              <p>
-                <span className="font-semibold">Delivery to:</span>{" "}
-                {formData.addressLine1}, {selectedSociety?.area}
-              </p>
-              <p>
-                <span className="font-semibold">Payment:</span> Cash on Delivery
-              </p>
-            </div>
-            <p className="text-xs text-gray-600 mt-1 pl-8">
-              Expected delivery in 2-3 business days
-            </p>
           </div>,
           {
             duration: 5000,
@@ -1589,13 +1923,10 @@ const CheckoutModal = ({
 
         setTimeout(() => onClose(true), 1500);
       } else {
-        // ========== ERROR HANDLING START ==========
         const errorList: string[] = [];
-        // 1. Check top-level message/error
         if (data.message) errorList.push(data.message);
         if (data.error) errorList.push(data.error);
 
-        // 2. Check nested 'errors' object or array
         if (data.errors) {
           if (Array.isArray(data.errors)) {
             data.errors.forEach((err: any) => errorList.push(String(err)));
@@ -1611,10 +1942,7 @@ const CheckoutModal = ({
           }
         }
 
-        // 3. Fallback
         if (errorList.length === 0) errorList.push("Failed to place order");
-
-        // 4. Remove duplicates
         const uniqueErrors = Array.from(new Set(errorList));
 
         toast.error(
@@ -1637,7 +1965,6 @@ const CheckoutModal = ({
             },
           }
         );
-        // ========== ERROR HANDLING END ==========
       }
     } catch (error) {
       toast.dismiss(loadingToast);
@@ -1665,11 +1992,13 @@ const CheckoutModal = ({
   };
 
   const isStep1Valid =
-    selectedSociety &&
-    formData.fullName.trim() &&
-    formData.phone.trim().length === 10 &&
-    formData.addressLine1.trim() &&
-    formData.pincode.trim().length === 6;
+    defaultAddress && !showAddressForm
+      ? true
+      : selectedSociety &&
+        formData.fullName.trim() &&
+        formData.phone.trim().length === 10 &&
+        formData.addressLine1.trim() &&
+        formData.pincode.trim().length === 6;
 
   if (!isOpen) return null;
 
@@ -1724,198 +2053,265 @@ const CheckoutModal = ({
             ))}
           </div>
 
+          {/* Loading Overlay */}
+          {isLoadingAddress && (
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-semibold text-gray-700">
+                  Loading address...
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            {/* STEP 1: ADDRESS FORM */}
+            {/* STEP 1: ADDRESS */}
             {step === 1 && (
               <div className="p-4 lg:p-6 space-y-4">
-                <div className="flex gap-2">
-                  {(["home", "work", "other"] as const).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() =>
-                        setFormData((prev) => ({ ...prev, addressType: type }))
-                      }
-                      className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-semibold capitalize transition-all active:scale-95 ${
-                        formData.addressType === type
-                          ? "border-green-600 bg-green-50 text-green-700"
-                          : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
-                      <FiHome className="inline mr-2 w-4 h-4" />
-                      {type}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="space-y-4">
-                  {/* Society Selector */}
-                  <SocietySelector
-                    selectedSociety={selectedSociety}
-                    setSelectedSociety={setSelectedSociety}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    showSocietyDropdown={showSocietyDropdown}
-                    setShowSocietyDropdown={setShowSocietyDropdown}
-                    errors={errors}
-                    setErrors={setErrors}
-                  />
-
-                  {/* Full Name */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      placeholder="Enter your full name"
-                      className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
-                        errors.fullName
-                          ? "border-red-500 focus:border-red-600"
-                          : "border-gray-200 focus:border-green-600"
-                      }`}
+                {/* Show Default Address or Form */}
+                {defaultAddress && !showAddressForm ? (
+                  <>
+                    {/* Saved Address Display */}
+                    <SavedAddressCard
+                      address={defaultAddress}
+                      society={selectedSociety}
+                      onEdit={handleEditAddress}
                     />
-                    {errors.fullName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.fullName}
-                      </p>
-                    )}
-                  </div>
 
-                  {/* Phone & Email */}
-                  <div className="grid grid-cols-2 gap-3">
+                    {/* Add New Address Button */}
+                    <button
+                      onClick={handleAddNewAddress}
+                      className="w-full py-3 px-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-600 hover:bg-green-50 transition-all flex items-center justify-center gap-2 text-gray-600 hover:text-green-700 font-semibold active:scale-98"
+                    >
+                      <FiPlus className="w-5 h-5" />
+                      Add New Delivery Address
+                    </button>
+
+                    {/* Quick Info */}
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <FiTruck className="text-green-600 w-4 h-4 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            Ready for Delivery
+                          </p>
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            Your order will be delivered within 60 minutes
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  // Address Form
+                  <div className="space-y-4">
+                    {/* Back button if editing default address */}
+                    {defaultAddress && showAddressForm && (
+                      <button
+                        onClick={handleCancelAddressEdit}
+                        className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm"
+                      >
+                        <FiArrowLeft className="w-4 h-4" />
+                        Use Default Address
+                      </button>
+                    )}
+
+                    {/* Address Type */}
+                    <div className="flex gap-2">
+                      {(["home", "work", "other"] as const).map((type) => (
+                        <button
+                          key={type}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              addressType: type,
+                            }))
+                          }
+                          className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-semibold capitalize transition-all active:scale-95 ${
+                            formData.addressType === type
+                              ? "border-green-600 bg-green-50 text-green-700"
+                              : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                          }`}
+                        >
+                          <FiHome className="inline mr-2 w-4 h-4" />
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Society Selector */}
+                    <SocietySelector
+                      selectedSociety={selectedSociety}
+                      setSelectedSociety={setSelectedSociety}
+                      searchQuery={searchQuery}
+                      setSearchQuery={setSearchQuery}
+                      showSocietyDropdown={showSocietyDropdown}
+                      setShowSocietyDropdown={setShowSocietyDropdown}
+                      errors={errors}
+                      setErrors={setErrors}
+                    />
+
+                    {/* Full Name */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Phone *
+                        Full Name *
                       </label>
                       <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
                         onChange={handleInputChange}
-                        placeholder="10-digit number"
-                        maxLength={10}
+                        placeholder="Enter your full name"
                         className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
-                          errors.phone
+                          errors.fullName
                             ? "border-red-500 focus:border-red-600"
                             : "border-gray-200 focus:border-green-600"
                         }`}
                       />
-                      {errors.phone && (
+                      {errors.fullName && (
                         <p className="text-red-500 text-sm mt-1">
-                          {errors.phone}
+                          {errors.fullName}
                         </p>
                       )}
                     </div>
 
+                    {/* Phone & Email */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Phone *
+                        </label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="10-digit number"
+                          maxLength={10}
+                          className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
+                            errors.phone
+                              ? "border-red-500 focus:border-red-600"
+                              : "border-gray-200 focus:border-green-600"
+                          }`}
+                        />
+                        {errors.phone && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.phone}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Email (Optional)
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="your@email.com"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-green-600 transition-all text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Address Line 1 */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Email (Optional)
+                        House/Flat No, Building Name *
                       </label>
                       <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
+                        type="text"
+                        name="addressLine1"
+                        value={formData.addressLine1}
                         onChange={handleInputChange}
-                        placeholder="your@email.com"
+                        placeholder="e.g., Flat 301, Tower A"
+                        className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
+                          errors.addressLine1
+                            ? "border-red-500 focus:border-red-600"
+                            : "border-gray-200 focus:border-green-600"
+                        }`}
+                      />
+                      {errors.addressLine1 && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.addressLine1}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Address Line 2 */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Landmark (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        name="addressLine2"
+                        value={formData.addressLine2}
+                        onChange={handleInputChange}
+                        placeholder="e.g., Near Metro Station"
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-green-600 transition-all text-sm"
                       />
                     </div>
-                  </div>
 
-                  {/* Address Line 1 */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      House/Flat No, Building Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="addressLine1"
-                      value={formData.addressLine1}
-                      onChange={handleInputChange}
-                      placeholder="e.g., Flat 301, Tower A"
-                      className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
-                        errors.addressLine1
-                          ? "border-red-500 focus:border-red-600"
-                          : "border-gray-200 focus:border-green-600"
-                      }`}
-                    />
-                    {errors.addressLine1 && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.addressLine1}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Address Line 2 */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Landmark (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      name="addressLine2"
-                      value={formData.addressLine2}
-                      onChange={handleInputChange}
-                      placeholder="e.g., Near Metro Station, Behind Mall"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-green-600 transition-all text-sm"
-                    />
-                  </div>
-
-                  {/* Pincode */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Pincode *
-                    </label>
-                    <input
-                      type="text"
-                      name="pincode"
-                      value={formData.pincode}
-                      onChange={handleInputChange}
-                      placeholder="6-digit pincode"
-                      maxLength={6}
-                      className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
-                        errors.pincode
-                          ? "border-red-500 focus:border-red-600"
-                          : "border-gray-200 focus:border-green-600"
-                      }`}
-                    />
-                    {errors.pincode && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.pincode}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Location Info Banner */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <FiMapPin className="text-green-600 w-4 h-4 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          Delivering to Ahmedabad, Gujarat
+                    {/* Pincode */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Pincode *
+                      </label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={formData.pincode}
+                        onChange={handleInputChange}
+                        placeholder="6-digit pincode"
+                        maxLength={6}
+                        className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all text-sm ${
+                          errors.pincode
+                            ? "border-red-500 focus:border-red-600"
+                            : "border-gray-200 focus:border-green-600"
+                        }`}
+                      />
+                      {errors.pincode && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.pincode}
                         </p>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          Currently serving selected areas in Ahmedabad
-                        </p>
+                      )}
+                    </div>
+
+                    {/* Info Banner */}
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <FiMapPin className="text-green-600 w-4 h-4 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            Delivering to Ahmedabad, Gujarat
+                          </p>
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            Selected areas in Ahmedabad
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
-            {/* STEP 2: REVIEW & PAYMENT */}
+            {/* STEP 2: REVIEW */}
             {step === 2 && (
               <div className="p-4 lg:p-6 space-y-4">
-                {/* Delivery Address Summary */}
+                {/* Address Summary */}
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="font-bold text-gray-900 text-base">
-                      Delivering to {formData.addressType}
+                      Delivering to{" "}
+                      {defaultAddress && !showAddressForm
+                        ? defaultAddress.addressType
+                        : formData.addressType}
                     </h3>
                     <button
                       onClick={() => setStep(1)}
@@ -1925,22 +2321,47 @@ const CheckoutModal = ({
                     </button>
                   </div>
                   <div className="space-y-2 text-sm text-gray-600">
-                    <p className="font-semibold text-gray-900">
-                      {formData.fullName}
-                    </p>
-                    <p>{formData.phone}</p>
-                    <p>
-                      {formData.addressLine1}
-                      {formData.addressLine2 && `, ${formData.addressLine2}`}
-                    </p>
-                    <p className="font-semibold text-green-700">
-                      {selectedSociety?.name}, {selectedSociety?.area}
-                    </p>
-                    <p>Ahmedabad, Gujarat - {formData.pincode}</p>
+                    {defaultAddress && !showAddressForm ? (
+                      <>
+                        <p className="font-semibold text-gray-900">
+                          {defaultAddress.fullName}
+                        </p>
+                        <p>{defaultAddress.phone}</p>
+                        <p>
+                          {defaultAddress.addressLine1}
+                          {defaultAddress.addressLine2 &&
+                            `, ${defaultAddress.addressLine2}`}
+                        </p>
+                        <p className="font-semibold text-green-700">
+                          {defaultAddress.societyName},{" "}
+                          {defaultAddress.societyArea}
+                        </p>
+                        <p>
+                          {defaultAddress.city}, {defaultAddress.state} -{" "}
+                          {defaultAddress.pincode}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-gray-900">
+                          {formData.fullName}
+                        </p>
+                        <p>{formData.phone}</p>
+                        <p>
+                          {formData.addressLine1}
+                          {formData.addressLine2 &&
+                            `, ${formData.addressLine2}`}
+                        </p>
+                        <p className="font-semibold text-green-700">
+                          {selectedSociety?.name}, {selectedSociety?.area}
+                        </p>
+                        <p>Ahmedabad, Gujarat - {formData.pincode}</p>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                {/* PAYMENT METHOD - COD ONLY */}
+                {/* Payment Method - COD */}
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-300">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -1952,7 +2373,7 @@ const CheckoutModal = ({
                           Payment Method
                         </h3>
                         <p className="text-xs text-gray-600 mt-0.5">
-                          Currently available payment option
+                          Cash on Delivery
                         </p>
                       </div>
                     </div>
@@ -1969,36 +2390,14 @@ const CheckoutModal = ({
                           Cash on Delivery
                         </p>
                         <p className="text-xs text-gray-600 mt-0.5">
-                          Pay when you receive your order
+                          Pay ₹{cartData.total.toFixed(2)} when delivered
                         </p>
                       </div>
                     </div>
-
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="flex items-start gap-2">
-                        <FiShield className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-gray-600">
-                          Please keep exact change ready. Amount to pay:{" "}
-                          <span className="font-bold text-gray-900">
-                            ₹{cartData.total.toFixed(2)}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 bg-green-100 rounded-lg p-3">
-                    <p className="text-xs text-green-800 flex items-start gap-2">
-                      <span className="font-bold flex-shrink-0">ℹ️</span>
-                      <span>
-                        Online payment options coming soon! For now, we only
-                        accept Cash on Delivery.
-                      </span>
-                    </p>
                   </div>
                 </div>
 
-                {/* Order Items Summary */}
+                {/* Order Summary */}
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <h3 className="font-bold text-gray-900 text-sm mb-3">
                     Order Summary ({cartData.items.length} items)
@@ -2066,7 +2465,7 @@ const CheckoutModal = ({
                     </div>
                     <div className="flex justify-between pt-2 border-t border-gray-200">
                       <span className="font-bold text-gray-900">
-                        Amount to Pay (COD)
+                        Total (COD)
                       </span>
                       <span className="font-black text-green-600 text-lg">
                         ₹{cartData.total.toFixed(2)}
@@ -2075,7 +2474,7 @@ const CheckoutModal = ({
                   </div>
                 </div>
 
-                {/* Delivery Estimate */}
+                {/* Delivery Info */}
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
                   <div className="flex items-center gap-3">
                     <FiTruck className="text-green-600 w-5 h-5" />
@@ -2096,7 +2495,7 @@ const CheckoutModal = ({
             {step === 1 ? (
               <button
                 onClick={handleNext}
-                disabled={!isStep1Valid}
+                disabled={!isStep1Valid || isLoadingAddress}
                 className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg shadow-green-600/30 active:scale-98"
               >
                 Continue to Review
